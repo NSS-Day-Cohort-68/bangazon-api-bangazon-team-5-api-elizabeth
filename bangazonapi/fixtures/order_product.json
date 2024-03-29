@@ -78,5 +78,165 @@
             "order_id": 3,
             "product_id": 45
         }
-    }
+    },
+    {
+        "model": "bangazonapi.orderproduct",
+        "pk": 10,
+        "fields": {
+          "order_id": 4,
+          "product_id": 50
+        }
+      },
+      {
+        "model": "bangazonapi.orderproduct",
+        "pk": 11,
+        "fields": {
+          "order_id": 4,
+          "product_id": 50
+        }
+      },
+      {
+        "model": "bangazonapi.orderproduct",
+        "pk": 12,
+        "fields": {
+          "order_id": 5,
+          "product_id": 50
+        }
+      },
+      {
+        "model": "bangazonapi.orderproduct",
+        "pk": 13,
+        "fields": {
+          "order_id": 5,
+          "product_id": 50
+        }
+      },
+      {
+        "model": "bangazonapi.orderproduct",
+        "pk": 14,
+        "fields": {
+          "order_id": 6,
+          "product_id": 50
+        }
+      },
+      {
+        "model": "bangazonapi.orderproduct",
+        "pk": 15,
+        "fields": {
+          "order_id": 6,
+          "product_id": 50
+        }
+      },
+      {
+        "model": "bangazonapi.orderproduct",
+        "pk": 16,
+        "fields": {
+          "order_id": 7,
+          "product_id": 50
+        }
+      },
+      {
+        "model": "bangazonapi.orderproduct",
+        "pk": 17,
+        "fields": {
+          "order_id": 7,
+          "product_id": 50
+        }
+      },
+      {
+        "model": "bangazonapi.orderproduct",
+        "pk": 18,
+        "fields": {
+          "order_id": 1,
+          "product_id": 50
+        }
+      },
+      {
+        "model": "bangazonapi.orderproduct",
+        "pk": 19,
+        "fields": {
+          "order_id": 1,
+          "product_id": 50
+        }
+      },
+      {
+        "model": "bangazonapi.orderproduct",
+        "pk": 20,
+        "fields": {
+          "order_id": 4,
+          "product_id": 50
+        }
+      },
+      {
+        "model": "bangazonapi.orderproduct",
+        "pk": 21,
+        "fields": {
+          "order_id": 4,
+          "product_id": 50
+        }
+      },
+      {
+        "model": "bangazonapi.orderproduct",
+        "pk": 22,
+        "fields": {
+          "order_id": 5,
+          "product_id": 50
+        }
+      },
+      {
+        "model": "bangazonapi.orderproduct",
+        "pk": 23,
+        "fields": {
+          "order_id": 5,
+          "product_id": 50
+        }
+      },
+      {
+        "model": "bangazonapi.orderproduct",
+        "pk": 24,
+        "fields": {
+          "order_id": 6,
+          "product_id": 50
+        }
+      },
+      {
+        "model": "bangazonapi.orderproduct",
+        "pk": 25,
+        "fields": {
+          "order_id": 6,
+          "product_id": 50
+        }
+      },
+      {
+        "model": "bangazonapi.orderproduct",
+        "pk": 26,
+        "fields": {
+          "order_id": 7,
+          "product_id": 50
+        }
+      },
+      {
+        "model": "bangazonapi.orderproduct",
+        "pk": 27,
+        "fields": {
+          "order_id": 7,
+          "product_id": 50
+        }
+      },
+      {
+        "model": "bangazonapi.orderproduct",
+        "pk": 28,
+        "fields": {
+          "order_id": 1,
+          "product_id": 50
+        }
+      },
+      {
+        "model": "bangazonapi.orderproduct",
+        "pk": 29,
+        "fields": {
+          "order_id": 3,
+          "product_id": 50
+        }
+      }
 ]
