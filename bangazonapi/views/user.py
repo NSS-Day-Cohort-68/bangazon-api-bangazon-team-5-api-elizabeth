@@ -12,21 +12,28 @@ class UserSerializer(serializers.HyperlinkedModelSerializer):
     Arguments:
         serializers
     """
+
     class Meta:
         model = User
-        url = serializers.HyperlinkedIdentityField(
-            view_name='user',
-            lookup_field = 'id'
+        url = serializers.HyperlinkedIdentityField(view_name="user", lookup_field="id")
+        fields = (
+            "id",
+            "url",
+            "username",
+            "password",
+            "first_name",
+            "last_name",
+            "email",
+            "is_active",
+            "date_joined",
         )
-        fields = ('id', 'url', 'username', 'password', 'first_name', 'last_name', 'email', 'is_active', 'date_joined')
 
 
 class Users(ViewSet):
     """Users for Bangazon
     Purpose: Allow a user to communicate with the Bangazon database to GET PUT POST and DELETE Users.
     Methods: GET PUT(id) POST
-"""
-
+    """
 
     def retrieve(self, request, pk=None):
         """Handle GET requests for single customer
@@ -37,16 +44,13 @@ class Users(ViewSet):
         """
         try:
             user = User.objects.get(pk=pk)
-            serializer = UserSerializer(user, context={'request': request})
+            serializer = UserSerializer(user, context={"request": request})
             return Response(serializer.data)
         except Exception as ex:
             return HttpResponseServerError(ex)
 
-
-
     def list(self, request):
         """Handle GET requests to user resource"""
         users = User.objects.all()
-        serializer = UserSerializer(
-            users, many=True, context={'request': request})
+        serializer = UserSerializer(users, many=True, context={"request": request})
         return Response(serializer.data)
