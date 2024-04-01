@@ -31,7 +31,7 @@ class ProductSerializer(serializers.ModelSerializer):
             "image_path",
             "average_rating",
             "can_be_rated",
-            "category_id"
+            "category_id",
         )
         depth = 1
 
@@ -98,34 +98,46 @@ class Products(ViewSet):
                 }
             }
         """
-        new_product = Product()
-        new_product.name = request.data["name"]
-        new_product.price = request.data["price"]
-        new_product.description = request.data["description"]
-        new_product.quantity = request.data["quantity"]
-        new_product.location = request.data["location"]
 
-        customer = Customer.objects.get(user=request.auth.user)
-        new_product.customer = customer
+        product_data = {
+            "name": request.data["name"],
+            "price": request.data["price"],
+            "description": request.data["description"],
+            "quantity": request.data["quantity"],
+            "location": request.data["location"],
+        }
 
-        product_category = ProductCategory.objects.get(pk=request.data["category_id"])
-        new_product.category = product_category
-
-        if "image_path" in request.data:
-            format, imgstr = request.data["image_path"].split(";base64,")
-            ext = format.split("/")[-1]
-            data = ContentFile(
-                base64.b64decode(imgstr),
-                name=f'{new_product.id}-{request.data["name"]}.{ext}',
+        serializer = ProductSerializer(data=product_data, context={"request": request})
+        if serializer.is_valid():
+            new_product = Product(
+                name=serializer.validated_data["name"],
+                price=serializer.validated_data["price"],
+                description=serializer.validated_data["description"],
+                quantity=serializer.validated_data["quantity"],
+                location=serializer.validated_data["location"],
             )
+            customer = Customer.objects.get(user=request.auth.user)
+            new_product.customer = customer
 
-            new_product.image_path = data
+            product_category = ProductCategory.objects.get(
+                pk=request.data["category_id"]
+            )
+            new_product.category = product_category
 
-        new_product.save()
+            new_product.save()
 
-        serializer = ProductSerializer(new_product, context={"request": request})
+            if "image_path" in request.data:
+                format, imgstr = request.data["image_path"].split(";base64,")
+                ext = format.split("/")[-1]
+                data = ContentFile(
+                    base64.b64decode(imgstr),
+                    name=f'{new_product.id}-{request.data["name"]}.{ext}',
+                )
 
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+                new_product.image_path = data
+                new_product.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def retrieve(self, request, pk=None):
         """
