@@ -106,6 +106,7 @@ class Products(ViewSet):
             "description": request.data["description"],
             "quantity": request.data["quantity"],
             "location": request.data["location"],
+            "category_id": request.data["category_id"],
         }
 
         # Pass in `data=product_data` to the serializer
@@ -121,6 +122,7 @@ class Products(ViewSet):
                 description=serializer.validated_data["description"],
                 quantity=serializer.validated_data["quantity"],
                 location=serializer.validated_data["location"],
+                category=serializer.validated_data["category"],
             )
 
             # Associate the customer with the new product
@@ -146,11 +148,14 @@ class Products(ViewSet):
 
                 new_product.image_path = data
                 new_product.save()
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            else:
 
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+                # If the validation does not pass, return the serializer errors
 
-        # If the validation does not pass, return the serializer errors
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def retrieve(self, request, pk=None):
         """
