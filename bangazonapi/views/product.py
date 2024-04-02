@@ -98,44 +98,44 @@ class Products(ViewSet):
                 }
             }
         """
+        try:
+            product_category = ProductCategory.objects.get(
+                pk=request.data["category_id"]
+            )
+        except ProductCategory.DoesNotExist:
+            return Response()
 
-        # Create a dictionary containing the data that you want to validate
+        customer = Customer.objects.get(user=request.auth.user)
+
         product_data = {
             "name": request.data["name"],
             "price": request.data["price"],
             "description": request.data["description"],
             "quantity": request.data["quantity"],
             "location": request.data["location"],
-            "category_id": request.data["category_id"],
+            "category": product_category,
+            "customer": customer,
         }
 
-        # Pass in `data=product_data` to the serializer
         serializer = ProductSerializer(data=product_data, context={"request": request})
 
-        # Check if the dictionary passed into the serializer data parameter meets all of the validation criteria of the model
         if serializer.is_valid():
 
-            # If the validation passes, then create a new instance of the Product object
             new_product = Product(
                 name=serializer.validated_data["name"],
                 price=serializer.validated_data["price"],
                 description=serializer.validated_data["description"],
                 quantity=serializer.validated_data["quantity"],
                 location=serializer.validated_data["location"],
-                category=serializer.validated_data["category"],
+                category=product_category,
+                customer=customer,
             )
 
-            # Associate the customer with the new product
             customer = Customer.objects.get(user=request.auth.user)
             new_product.customer = customer
 
-            # Associate the category with the new product
-            product_category = ProductCategory.objects.get(
-                pk=request.data["category_id"]
-            )
             new_product.category = product_category
 
-            # Save the new product so that a product.id (pk) will be created for it. The product.id is needed when dealing with the image_path below.
             new_product.save()
 
             if "image_path" in request.data:
@@ -146,16 +146,11 @@ class Products(ViewSet):
                     name=f'{new_product.id}-{request.data["name"]}.{ext}',
                 )
 
-                new_product.image_path = data
-                new_product.save()
-            if serializer.is_valid():
-                serializer.save()
-                return Response(serializer.data, status=status.HTTP_201_CREATED)
-            else:
+            serializer = ProductSerializer(new_product, context={"request": request})
 
-                # If the validation does not pass, return the serializer errors
-
-                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def retrieve(self, request, pk=None):
         """
