@@ -31,7 +31,7 @@ class ProductSerializer(serializers.ModelSerializer):
             "image_path",
             "average_rating",
             "can_be_rated",
-            "category_id",
+            "category",
         )
         depth = 1
 
