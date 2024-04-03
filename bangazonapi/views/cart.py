@@ -28,14 +28,16 @@ class Cart(ViewSet):
             open_order = Order.objects.get(
                 customer=current_user, payment_type__isnull=True
             )
-        except Order.DoesNotExist as ex:
+        except Order.DoesNotExist:
             open_order = Order()
-            open_order.created_date = datetime.datetime.now()
             open_order.customer = current_user
             open_order.save()
 
         line_item = OrderProduct()
-        line_item.product = Product.objects.get(pk=request.data["product_id"])
+        try:
+            line_item.product = Product.objects.get(pk=request.data["product_id"])
+        except Product.DoesNotExist as ex:
+            return Response({"message": ex.args[0]}, status=status.HTTP_404_NOT_FOUND)
         line_item.order = open_order
         line_item.save()
 
