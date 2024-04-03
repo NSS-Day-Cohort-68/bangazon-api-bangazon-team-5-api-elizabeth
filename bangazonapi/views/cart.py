@@ -83,22 +83,25 @@ class Cart(ViewSet):
                 "created_date": "2019-04-12",
                 "payment_type": null,
                 "customer": "http://localhost:8000/customers/7",
-                "products": [
+                "lineitems": [
                     {
-                        "id": 52,
-                        "url": "http://localhost:8000/products/52",
-                        "name": "900",
-                        "price": 1296.98,
-                        "number_sold": 0,
-                        "description": "1987 Saab",
-                        "quantity": 2,
-                        "created_date": "2019-03-19",
-                        "location": "Vratsa",
-                        "image_path": null,
-                        "average_rating": 0,
-                        "category": {
-                            "url": "http://localhost:8000/productcategories/2",
-                            "name": "Auto"
+                        "id": 1,
+                        "product": {
+                            "id": 52,
+                            "url": "http://localhost:8000/products/52",
+                            "name": "900",
+                            "price": 1296.98,
+                            "number_sold": 0,
+                            "description": "1987 Saab",
+                            "quantity": 2,
+                            "created_date": "2019-03-19",
+                            "location": "Vratsa",
+                            "image_path": null,
+                            "average_rating": 0,
+                            "category": {
+                                "url": "http://localhost:8000/productcategories/2",
+                                "name": "Auto"
+                            }
                         }
                     }
                 ],
@@ -115,12 +118,7 @@ class Cart(ViewSet):
                 open_order, many=False, context={"request": request}
             )
 
-            product_list = ProductSerializer(
-                products_on_order, many=True, context={"request": request}
-            )
-
             final = {"order": serialized_order.data}
-            final["order"]["products"] = product_list.data
             final["order"]["size"] = len(products_on_order)
 
         except Order.DoesNotExist as ex:
