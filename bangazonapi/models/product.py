@@ -6,6 +6,7 @@ from .customer import Customer
 from .productcategory import ProductCategory
 from .orderproduct import OrderProduct
 from .productrating import ProductRating
+from django.core.exceptions import ValidationError
 
 
 class Product(SafeDeleteModel):
@@ -18,7 +19,7 @@ class Product(SafeDeleteModel):
         Customer, on_delete=models.DO_NOTHING, related_name="products"
     )
     price = models.FloatField(
-        validators=[MinValueValidator(0.00), MaxValueValidator(10000.00)],
+        validators=[MinValueValidator(0.00), MaxValueValidator(17500.00)],
     )
     description = models.CharField(
         max_length=255,
@@ -40,6 +41,11 @@ class Product(SafeDeleteModel):
         max_length=None,
         null=True,
     )
+
+    def clean(self):
+        super().clean()
+        if self.price < 0 or self.price > 17500:
+            raise ValidationError("Price must be between 0.00 & 17500")
 
     @property
     def number_sold(self):
