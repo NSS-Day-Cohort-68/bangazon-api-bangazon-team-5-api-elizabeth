@@ -1,6 +1,7 @@
 import json
 from rest_framework import status
 from rest_framework.test import APITestCase
+import datetime
 
 
 class OrderTests(APITestCase):
@@ -28,6 +29,23 @@ class OrderTests(APITestCase):
         self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token)
         response = self.client.post(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        url = "/paymenttypes"
+        data = {
+            "merchant_name": "American Express",
+            "account_number": "111-1111-1111",
+            "expiration_date": "2024-12-31",
+            "create_date": datetime.date.today()
+        }
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token)
+        response = self.client.post(url, data, format='json')
+        json_response = json.loads(response.content)
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(json_response["merchant_name"], "American Express")
+        self.assertEqual(json_response["account_number"], "111-1111-1111")
+        self.assertEqual(json_response["expiration_date"], "2024-12-31")
+        self.assertEqual(json_response["create_date"], str(datetime.date.today()))
 
 
     def test_add_product_to_order(self):
@@ -80,5 +98,13 @@ class OrderTests(APITestCase):
         self.assertEqual(len(json_response["lineitems"]), 0)
 
     # TODO: Complete order by adding payment type
+
+    def test_complete_order(self):
+        """
+        Ensure we can complete an order by updating the payment.
+        """
+        #
+
+
 
     # TODO: New line item is not added to closed order
