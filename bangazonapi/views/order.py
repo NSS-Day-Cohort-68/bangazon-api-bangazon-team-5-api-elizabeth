@@ -8,6 +8,7 @@ from rest_framework import serializers
 from rest_framework import status
 from rest_framework.decorators import action
 from bangazonapi.models import Order, Payment, Customer, Product, OrderProduct
+from bangazonapi.views.paymenttype import PaymentSerializer
 from .product import ProductSerializer
 
 
@@ -29,11 +30,23 @@ class OrderSerializer(serializers.HyperlinkedModelSerializer):
     """JSON serializer for customer orders"""
 
     lineitems = OrderLineItemSerializer(many=True)
+    total_cost = serializers.DecimalField(
+        max_digits=10, decimal_places=2, read_only=True
+    )
+    payment_type_info = PaymentSerializer(source="payment_type", read_only=True)
 
     class Meta:
         model = Order
         url = serializers.HyperlinkedIdentityField(view_name="order", lookup_field="id")
-        fields = ("id", "url", "created_date", "payment_type", "customer", "lineitems")
+        fields = (
+            "id",
+            "url",
+            "created_date",
+            "payment_type_info",
+            "customer",
+            "lineitems",
+            "total_cost",
+        )
 
 
 class Orders(ViewSet):
