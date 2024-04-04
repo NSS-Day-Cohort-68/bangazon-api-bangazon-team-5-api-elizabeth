@@ -45,7 +45,6 @@ class OrderSerializer(serializers.HyperlinkedModelSerializer):
             "payment_type_info",
             "customer",
             "lineitems",
-            "total_cost",
         )
 
 
