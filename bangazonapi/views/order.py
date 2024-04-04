@@ -30,10 +30,6 @@ class OrderSerializer(serializers.HyperlinkedModelSerializer):
     """JSON serializer for customer orders"""
 
     lineitems = OrderLineItemSerializer(many=True)
-    total_cost = serializers.DecimalField(
-        max_digits=10, decimal_places=2, read_only=True
-    )
-    payment_type_info = PaymentSerializer(source="payment_type", read_only=True)
 
     class Meta:
         model = Order
@@ -42,7 +38,6 @@ class OrderSerializer(serializers.HyperlinkedModelSerializer):
             "id",
             "url",
             "created_date",
-            "payment_type_info",
             "customer",
             "lineitems",
         )
