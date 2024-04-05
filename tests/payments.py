@@ -50,7 +50,6 @@ class PaymentTests(APITestCase):
         self.assertEqual(json_response["create_date"], str(datetime.date.today()))
 
     # TODO: Delete payment type
-<<<<<<< HEAD
     def test_delete_payment_type(self):
         self.client.credentials(HTTP_AUTHORIZATION="Token " + self.token)
         url = "/paymenttypes"
@@ -70,26 +69,3 @@ class PaymentTests(APITestCase):
 
         with self.assertRaises(Payment.DoesNotExist):
             Payment.objects.get(pk=self.paymenttype["id"])
-=======
-    # def test_delete_payment_type(self, request, pk=None):
-    #     url = "/delete-payment"
-    #     data = {
-    #         "merchant_name": "American Express",
-    #         "account_number": "111-1111-1111",
-    #         "expiration_date": "2024-12-31",
-    #     }
-
-    #     try:
-    #         payment = Payment.objects.get(pk=pk)
-    #         payment.delete()
-
-    #         return Response({}, status=status.HTTP_204_NO_CONTENT)
-
-    #     except Payment.DoesNotExist as ex:
-    #         return Response({"message": ex.args[0]}, status=status.HTTP_404_NOT_FOUND)
-
-    #     except Exception as ex:
-    #         return Response(
-    #             {"message": ex.args[0]}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
-    #         )
->>>>>>> 09fa7a2 (a start)
