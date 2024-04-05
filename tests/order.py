@@ -107,16 +107,20 @@ class OrderTests(APITestCase):
         self.test_add_product_to_order()
 
         # Update order with payment 
-        url = "/order/1"
-        data = { "payment_type_id": 1 }
+        url = "/orders/1"
+        data = { "payment_type": 1 }
         self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token)
         response = self.client.put(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
 
-        response = self.client.get(url, data, format='json')
+        # Get order and verify payment was added
+        url = "/orders/1"
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token)
+        response = self.client.get(url, None, format='json')
         json_response = json.loads(response.content)
+
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(json_response["payment_type_id"], "1")
+        self.assertEqual(json_response["payment_type"], 'http://testserver/paymenttypes/1')
 
 
 
