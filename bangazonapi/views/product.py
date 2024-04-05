@@ -31,6 +31,7 @@ class ProductSerializer(serializers.ModelSerializer):
             "image_path",
             "average_rating",
             "can_be_rated",
+            "category_id",
         )
         depth = 1
 
@@ -97,34 +98,59 @@ class Products(ViewSet):
                 }
             }
         """
-        new_product = Product()
-        new_product.name = request.data["name"]
-        new_product.price = request.data["price"]
-        new_product.description = request.data["description"]
-        new_product.quantity = request.data["quantity"]
-        new_product.location = request.data["location"]
+        try:
+            product_category = ProductCategory.objects.get(
+                pk=request.data["category_id"]
+            )
+        except ProductCategory.DoesNotExist:
+            return Response()
 
         customer = Customer.objects.get(user=request.auth.user)
-        new_product.customer = customer
 
-        product_category = ProductCategory.objects.get(pk=request.data["category_id"])
-        new_product.category = product_category
+        product_data = {
+            "name": request.data["name"],
+            "price": request.data["price"],
+            "description": request.data["description"],
+            "quantity": request.data["quantity"],
+            "location": request.data["location"],
+            "category": product_category,
+            "customer": customer,
+        }
 
-        if "image_path" in request.data:
-            format, imgstr = request.data["image_path"].split(";base64,")
-            ext = format.split("/")[-1]
-            data = ContentFile(
-                base64.b64decode(imgstr),
-                name=f'{new_product.id}-{request.data["name"]}.{ext}',
+        serializer = ProductSerializer(data=product_data, context={"request": request})
+
+        if serializer.is_valid():
+
+            new_product = Product(
+                name=serializer.validated_data["name"],
+                price=serializer.validated_data["price"],
+                description=serializer.validated_data["description"],
+                quantity=serializer.validated_data["quantity"],
+                location=serializer.validated_data["location"],
+                category=product_category,
+                customer=customer,
             )
 
-            new_product.image_path = data
+            customer = Customer.objects.get(user=request.auth.user)
+            new_product.customer = customer
 
-        new_product.save()
+            new_product.category = product_category
 
-        serializer = ProductSerializer(new_product, context={"request": request})
+            new_product.save()
 
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+            if "image_path" in request.data:
+                format, imgstr = request.data["image_path"].split(";base64,")
+                ext = format.split("/")[-1]
+                data = ContentFile(
+                    base64.b64decode(imgstr),
+                    name=f'{new_product.id}-{request.data["name"]}.{ext}',
+                )
+
+            serializer = ProductSerializer(new_product, context={"request": request})
+
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def retrieve(self, request, pk=None):
         """
@@ -267,6 +293,8 @@ class Products(ViewSet):
         order = self.request.query_params.get("order_by", None)
         direction = self.request.query_params.get("direction", None)
         number_sold = self.request.query_params.get("number_sold", None)
+        min_price = self.request.query_params.get("min_price", None)
+        name = self.request.query_params.get("name", None)
 
         if order is not None:
             order_filter = order
@@ -291,6 +319,12 @@ class Products(ViewSet):
                 return False
 
             products = filter(sold_filter, products)
+
+        if min_price is not None:
+            products = products.filter(price__gte=min_price)
+
+        if name is not None: 
+            products = products.filter(name__icontains=name)
 
         serializer = ProductSerializer(
             products, many=True, context={"request": request}
