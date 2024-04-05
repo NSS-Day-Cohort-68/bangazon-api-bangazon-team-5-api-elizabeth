@@ -30,6 +30,7 @@ class OrderSerializer(serializers.HyperlinkedModelSerializer):
     """JSON serializer for customer orders"""
 
     lineitems = OrderLineItemSerializer(many=True)
+    payment_type_info = PaymentSerializer(source="payment_type", read_only=True)
 
     class Meta:
         model = Order
@@ -38,7 +39,7 @@ class OrderSerializer(serializers.HyperlinkedModelSerializer):
             "id",
             "url",
             "created_date",
-            "customer",
+            "payment_type_info" "customer",
             "lineitems",
         )
 
