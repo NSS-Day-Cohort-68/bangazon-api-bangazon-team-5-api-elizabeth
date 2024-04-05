@@ -108,7 +108,7 @@ class OrderTests(APITestCase):
 
         # Update order with payment 
         url = "/orders/1"
-        data = { "payment_type": 1 }
+        data = { "payment_id": 1 }
         self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token)
         response = self.client.put(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
@@ -120,7 +120,7 @@ class OrderTests(APITestCase):
         json_response = json.loads(response.content)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(json_response["payment_type"], 'http://testserver/paymenttypes/1')
+        self.assertEqual(json_response["payment_type_info"]["url"], 'http://testserver/paymenttypes/1')
 
 
 
