@@ -114,8 +114,8 @@ class Orders(ViewSet):
         """
         customer = Customer.objects.get(user=request.auth.user)
         order = Order.objects.get(pk=pk, customer=customer)
-        payment_type= request.data["payment_type"]
-        payment_instance = Payment(pk=payment_type)
+        payment_id= request.data["payment_id"]
+        payment_instance = Payment(pk=payment_id)
         order.payment_type = payment_instance
         order.save()
 
@@ -154,7 +154,7 @@ class Orders(ViewSet):
         customer = Customer.objects.get(user=request.auth.user)
         orders = Order.objects.filter(customer=customer)
 
-        payment = self.request.query_params.get("payment_type", None)
+        payment = self.request.query_params.get("payment_id", None)
         if payment is not None:
             orders = orders.filter(payment__id=payment)
 
