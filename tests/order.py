@@ -225,7 +225,7 @@ class OrderTests(APITestCase):
         # Update order with payment 
 
         today = str(datetime.date.today())
-        now = models.DateField(auto_now_add=True)
+
 
         url = "/orders/1"
         data = { "payment_type": 1 }
@@ -242,11 +242,19 @@ class OrderTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(json_response["id"], 1)
         self.assertEqual(json_response["customer"], "http://testserver/customers/1")
-        self.assertEqual(json_response["created_date"], now)
+        self.assertEqual(json_response["created_date"], today)
         self.assertEqual(json_response["payment_type_info"]["id"], 1)
+        self.assertEqual(json_response["payment_type_info"]["url"], "http://testserver/paymenttypes/1")
         self.assertEqual(json_response["payment_type_info"]["merchant_name"], "American Express")
         self.assertEqual(json_response["payment_type_info"]["account_number"], "111-1111-1111")
         self.assertEqual(json_response["payment_type_info"]["expiration_date"], "2024-12-31")
         self.assertGreaterEqual(json_response["payment_type_info"]["create_date"], today)
+        self.assertEqual(json_response["lineitems"][0]["id"],  1)
+        self.assertEqual(json_response["lineitems"][0]["product"]["name"],  "Kite")
+        self.assertEqual(json_response["lineitems"][0]["product"]["price"],  14.99)
+        self.assertEqual(json_response["lineitems"][0]["product"]["quantity"],  60)
+        self.assertEqual(json_response["lineitems"][0]["product"]["description"],  "It flies high")
+        self.assertEqual(json_response["lineitems"][0]["product"]["category_id"],  1)
+        self.assertEqual(json_response["lineitems"][0]["product"]["location"],  "Pittsburgh")
 
     # TODO: New line item is not added to closed order
