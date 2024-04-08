@@ -12,6 +12,7 @@ def report(request):
         for order in unpaid_orders
         for customer in Customer.objects.filter(id=order.customer_id)
         for user in User.objects.filter(id=customer.user_id)
+        # for product in
     ]
 
     return render(request, "index.html", {"report_data": report_data})
