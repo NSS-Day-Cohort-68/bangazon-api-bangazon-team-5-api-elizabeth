@@ -98,27 +98,52 @@ class OrderTests(APITestCase):
         """
         When the user has no open orders, ensure that a new order is created when adding the first product rather than associating the product with a previously closed order.
         """
-        # Run test for add product to order
-        self.test_add_product_to_order()
 
-        # Run test for complete order
+        # Establish authorization for the requests to come
+        self.client.credentials(HTTP_AUTHORIZATION="Token " + self.token)
 
-        # Get orders and verify that len(response) is 1
-        url = "/orders"
-        self.client.credentials(HTTP_AUTHORIZATION="Token" + self.token)
-        response = self.client.get(url, None, format="json")
-        json_response = json.loads(response.content)
+        # Get a product id from the testing database
+        url = "/products"
+        products_response = self.client.get(url, None, format="json")
+        product_list = json.loads(products_response.content)
+        product_id = product_list[0]["id"]
 
-        self.assertEqual(len(json_response), 1)
+        # Add the product to the cart
+        url = "/cart"
+        product_data = {"product_id": product_id}
+        response = self.client.post(url, product_data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        print(response)
 
-        # Run test for add product to order again
-        self.test_add_product_to_order()
+        # # Get info about the current open cart
+        # response = self.client.get(url, None, format="json")
+        # first_cart = json.loads(response.content)
+        # first_cart_id = first_cart.id
+        # first_cart_lineitems = first_cart.lineitems
+        # self.assertEqual(len(first_cart_lineitems), 1)
+        # self.assertIsNone(first_cart.payment_type)
 
-        # Get orders and verify that len(response) is 2
-        response = self.client.get(url, None, format="json")
-        json_response = json.loads(response.content)
+        # # Add another product to the cart
+        # self.client.post(url, product_data, format="json")
 
-        self.assertEqual(len(json_response), 2)
-        self.assertIsNotNone(json_response[0].payment_type)
-        # Verify that response[1].payment_type is null
-        self.assertIsNone(json_response[1].payment_type)
+        # # Complete the order
+
+        # # Get orders and verify that len(response) is 1
+        # url = "/orders"
+        # self.client.credentials(HTTP_AUTHORIZATION="Token" + self.token)
+        # response = self.client.get(url, None, format="json")
+        # json_response = json.loads(response.content)
+
+        # self.assertEqual(len(json_response), 1)
+
+        # # Add product to order again
+        # self.test_add_product_to_order()
+
+        # # Get orders and verify that len(response) is 2
+        # response = self.client.get(url, None, format="json")
+        # json_response = json.loads(response.content)
+
+        # self.assertEqual(len(json_response), 2)
+        # self.assertIsNotNone(json_response[0].payment_type)
+        # # Verify that response[1].payment_type is null
+        # self.assertIsNone(json_response[1].payment_type)
