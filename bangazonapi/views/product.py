@@ -37,6 +37,15 @@ class ProductSerializer(serializers.ModelSerializer):
         )
         depth = 1
 
+class ProductLikeSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Like
+    fields = (
+        "liker"
+        "product"
+    )
+    depth = 1
 
 class Products(ViewSet):
     """Request handlers for Products in the Bangazon Platform"""
@@ -365,16 +374,34 @@ class Products(ViewSet):
 
             return Response(None, status=status.HTTP_200_OK)
     
-    @action(methods=["post"], detail=True)
+    @action(methods=["post", "delete"], detail=True)
     def like(self, request, pk=None):
 
         if request.method == "POST":
             like = Like()
-            like.customer = Customer.objects.get(user=request.auth.user)
+            like.liker = Customer.objects.get(user=request.auth.user)
             like.product = Product.objects.get(pk=pk)
 
             like.save()
 
             return Response(None, status=status.HTTP_204_NO_CONTENT)
 
+    
+        if request.method == "DELETE":
+            like = Product.objects.get(pk=pk)
+            like.delete()
+
+            return Response(None, status=status.HTTP_204_NO_CONTENT)
+        
         return Response(None, status=status.HTTP_405_METHOD_NOT_ALLOWED)
+    
+    @action(methods=["get"], detail=True)
+    def liked(self, request):
+
+        if request.method == "GET":
+           liked = Like.objects.all()
+
+        serializer = ProductLikeSerializer(
+            liked, many=True, context={"request": request}
+             )
+        return Response(serializer.data)
