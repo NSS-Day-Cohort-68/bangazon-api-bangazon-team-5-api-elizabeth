@@ -8,4 +8,9 @@ from .recommendation import Recommendation
 from .rating import Rating
 from .favorite import Favorite
 from .productrating import ProductRating
+<<<<<<< HEAD
 from .store import Store
+=======
+from .like import Like
+
+>>>>>>> c035b25 (started)
