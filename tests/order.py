@@ -149,8 +149,8 @@ class OrderTests(APITestCase):
         self.assertIsNone(cart_with_one_item["payment_type_info"])
 
         # Add another product to the cart
-        self.client.post(url, product_data, format="json")
-        # self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        response = self.client.post(url, product_data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
         # Get info about the current open cart again
         response = self.client.get(url, None, format="json")
@@ -162,28 +162,59 @@ class OrderTests(APITestCase):
         self.assertEqual(len(cart_with_two_items_lineitems), 2)
         self.assertIsNone(cart_with_one_item["payment_type_info"])
 
-        # Verify that the cart id has not changed
+        # Verify that the cart id did not change when a second product was added
         self.assertEqual(cart_with_one_item_id, cart_with_two_items_id)
 
-        # Complete the order
-        url = "/order/" + str(cart_with_one_item_id)
+        # Complete the order by adding a payment type
+        url = "/orders/" + str(cart_with_one_item_id)
+        data = {"payment_type": self.paymenttype["id"]}
 
-        # # Get orders and verify that len(response) is 1
-        # url = "/orders"
-        # self.client.credentials(HTTP_AUTHORIZATION="Token" + self.token)
-        # response = self.client.get(url, None, format="json")
-        # json_response = json.loads(response.content)
+        response = self.client.put(url, data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
 
-        # self.assertEqual(len(json_response), 1)
+        # Try to get the current open order. Expect a 404 because there is no open order.
+        url = "/cart"
+        response = self.client.get(url, None, format="json")
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
-        # # Add product to order again
-        # self.test_add_product_to_order()
+        # Get all orders and verify that there is 1 order in the testing database
+        url = "/orders"
+        response = self.client.get(url, None, format="json")
+        json_response = json.loads(response.content)
 
-        # # Get orders and verify that len(response) is 2
-        # response = self.client.get(url, None, format="json")
-        # json_response = json.loads(response.content)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-        # self.assertEqual(len(json_response), 2)
-        # self.assertIsNotNone(json_response[0].payment_type)
-        # # Verify that response[1].payment_type is null
-        # self.assertIsNone(json_response[1].payment_type)
+        # Verify that there is only one order
+        self.assertEqual(len(json_response), 1)
+
+        # Verify that there are two products on this order
+        self.assertEqual(len(json_response[0]["lineitems"]), 2)
+
+        # Verify the payment info
+        self.assertEqual(json_response[0]["payment_type_info"], self.paymenttype)
+
+        # Add a product to cart again. This time, expect a new order to be opened.
+        url = "/cart"
+        response = self.client.post(url, product_data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        # Get info about the current open cart
+        response = self.client.get(url, None, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        new_cart_with_one_item = json.loads(response.content)
+        new_cart_with_one_item_id = new_cart_with_one_item["id"]
+        new_cart_with_one_item_lineitems = new_cart_with_one_item["lineitems"]
+        self.assertEqual(len(new_cart_with_one_item_lineitems), 1)
+        self.assertIsNone(new_cart_with_one_item["payment_type_info"])
+
+        # Verify that the first cart and second cart have different id's
+        self.assertNotEqual(cart_with_one_item_id, new_cart_with_one_item_id)
+
+        # Get orders and verify that there are now 2 orders in the testing database
+        url = "/orders"
+        response = self.client.get(url, None, format="json")
+        json_response = json.loads(response.content)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(json_response), 2)
