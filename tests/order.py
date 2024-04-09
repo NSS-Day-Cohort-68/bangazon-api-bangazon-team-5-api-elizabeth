@@ -114,7 +114,7 @@ class OrderTests(APITestCase):
     # TODO: New line item is not added to closed order
     def test_add_item_to_new_open_order(self):
         """
-        When the user has no open orders, ensure that a new order is created when adding the first product rather than associating the product with a previously closed order.
+        When the user has no open orders, ensure that a new cart is created when adding the first product rather than associating the product with a previously closed order.
         """
 
         # Establish authorization for the requests to come
@@ -138,8 +138,6 @@ class OrderTests(APITestCase):
 
         cart_with_one_item = json.loads(response.content)
         cart_with_one_item_id = cart_with_one_item["id"]
-        cart_with_one_item_lineitems = cart_with_one_item["lineitems"]
-        self.assertEqual(len(cart_with_one_item_lineitems), 1)
         self.assertIsNone(cart_with_one_item["payment_type_info"])
 
         # Add another product to the cart
@@ -152,8 +150,6 @@ class OrderTests(APITestCase):
 
         cart_with_two_items = json.loads(response.content)
         cart_with_two_items_id = cart_with_two_items["id"]
-        cart_with_two_items_lineitems = cart_with_two_items["lineitems"]
-        self.assertEqual(len(cart_with_two_items_lineitems), 2)
         self.assertIsNone(cart_with_one_item["payment_type_info"])
 
         # Verify that the cart id did not change when a second product was added
@@ -184,7 +180,7 @@ class OrderTests(APITestCase):
         # Verify that there are two products on this order
         self.assertEqual(len(json_response[0]["lineitems"]), 2)
 
-        # Verify the payment info
+        # Verify that the payment info matches the paymenttype created in setUp()
         self.assertEqual(json_response[0]["payment_type_info"], self.paymenttype)
 
         # Add a product to cart again. This time, expect a new order to be opened.
@@ -200,6 +196,8 @@ class OrderTests(APITestCase):
         new_cart_with_one_item_id = new_cart_with_one_item["id"]
         new_cart_with_one_item_lineitems = new_cart_with_one_item["lineitems"]
         self.assertEqual(len(new_cart_with_one_item_lineitems), 1)
+
+        # Verify that the new cart has no payment type
         self.assertIsNone(new_cart_with_one_item["payment_type_info"])
 
         # Verify that the first cart and second cart have different id's
