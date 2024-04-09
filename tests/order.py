@@ -36,8 +36,9 @@ class OrderTests(APITestCase):
         data = { "name": "Kite", "price": 14.99, "quantity": 60, "description": "It flies high", "category_id": 1, "location": "Pittsburgh" }
         self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token)
         response = self.client.post(url, data, format='json')
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.product = json.loads(response.content)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        
 
         url = "/paymenttypes"
         data = {
@@ -226,7 +227,7 @@ class OrderTests(APITestCase):
         """
         # Add product to order
         url = "/cart"
-        data = { 'product_id': self.product.id }
+        data = { 'product_id': self.product["id"] }
         self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token)
         response = self.client.post(url, data, format='json')
 
@@ -236,7 +237,9 @@ class OrderTests(APITestCase):
         url = "/cart"
         self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token)
         response = self.client.get(url, None, format='json')
+        self.order = json.loads(response.content)
         json_response = json.loads(response.content)
+        
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(json_response["id"], 1)
@@ -249,14 +252,14 @@ class OrderTests(APITestCase):
         today = str(datetime.date.today())
 
 
-        url = "/orders/1"
-        data = { "payment_type": self.paymenttype.id} 
+        url = f"/orders/{self.order["id"]}"
+        data = { "payment_type": self.paymenttype["id"]} 
         self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token)
         response = self.client.put(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
 
         # Get order and verify payment was added
-        url = "/orders/1"
+        url = f"/orders/{self.order["id"]}"
         self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token)
         response = self.client.get(url, None, format='json')
         json_response = json.loads(response.content)
