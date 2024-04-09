@@ -1,8 +1,11 @@
+from tokenize import Token
+from rest_framework.authtoken.models import Token
 import datetime
 import json
-from urllib import response
+from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
+from django.contrib.auth.models import User
 from bangazonapi.models.payment import Payment
 
 
@@ -11,6 +14,14 @@ class PaymentTests(APITestCase):
         """
         Create a new account and create sample category
         """
+        # self.user = User.objects.create_user(
+        #     username="steve",
+        #     password="Admin8*",
+        #     email="steve@stevebrownlee.com",
+        #     first_name="Steve",
+        #     last_name="Brownlee",
+        # )
+        # self.token = Token.objects.create(user=self.user)
         url = "/register"
         data = {
             "username": "steve",
@@ -22,9 +33,9 @@ class PaymentTests(APITestCase):
             "last_name": "Brownlee",
         }
         response = self.client.post(url, data, format="json")
-        json_response = json.loads(response.content)
-        self.token = json_response["token"]
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.user = User.objects.get(username="steve", password="Admin8*")
+        self.token = Token.objects.create(user=self.user)
 
     def test_create_payment_type(self):
         """
@@ -49,24 +60,17 @@ class PaymentTests(APITestCase):
         self.assertEqual(json_response["create_date"], str(datetime.date.today()))
 
     # TODO: Delete payment type
-    def test_delete_payment_type(self, request, pk=None):
-        url = "/delete-payment"
-        data = {
-            "merchant_name": "American Express",
-            "account_number": "111-1111-1111",
-            "expiration_date": "2024-12-31",
-        }
+    def test_delete_payment_type(self):
+        payment = Payment.objects.create(
+            merchant_name="American Express",
+            account_number="111-1111-1111",
+            expiration_date="2024-12-31",
+        )
+        self.client.credentials(HTTP_AUTHORIZATION="Token " + self.token)
 
-        try:
-            payment = Payment.objects.get(pk=pk)
-            payment.delete()
+        url = reverse("delete-payment", kwargs={"pk": payment.pk})
+        response = self.client.delete(url)
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
 
-            return Response({}, status=status.HTTP_204_NO_CONTENT)
-
-        except Payment.DoesNotExist as ex:
-            return Response({"message": ex.args[0]}, status=status.HTTP_404_NOT_FOUND)
-
-        except Exception as ex:
-            return Response(
-                {"message": ex.args[0]}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
+        with self.assertRaises(Payment.DoesNotExist):
+            Payment.objects.get(pk=payment.pk)
