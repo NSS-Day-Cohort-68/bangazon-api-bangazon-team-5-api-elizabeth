@@ -1,4 +1,5 @@
 import json
+from datetime import date, datetime
 from rest_framework import status
 from rest_framework.test import APITestCase
 
@@ -42,6 +43,29 @@ class OrderTests(APITestCase):
         self.client.credentials(HTTP_AUTHORIZATION="Token " + self.token)
         response = self.client.post(url, data, format="json")
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        # Create a payment type
+        url = "/paymenttypes"
+
+        created = date.today()
+        exp = date(created.year + 5, created.month, created.day)
+
+        data = {
+            "merchant_name": "Visa",
+            "account_number": "testing12345678",
+            "expiration_date": exp,
+            "create_date": created,
+        }
+
+        response = self.client.post(url, data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.paymenttype = json.loads(response.content)
+        self.assertEqual(
+            self.paymenttype["create_date"], date.today().strftime("%Y-%m-%d")
+        )
+        self.assertEqual(self.paymenttype["expiration_date"], exp.strftime("%Y-%m-%d"))
+        self.assertEqual(self.paymenttype["merchant_name"], data["merchant_name"])
+        self.assertEqual(self.paymenttype["account_number"], data["account_number"])
 
     def test_add_product_to_order(self):
         """
@@ -112,21 +136,37 @@ class OrderTests(APITestCase):
         url = "/cart"
         product_data = {"product_id": product_id}
         response = self.client.post(url, product_data, format="json")
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        print(response)
+        # self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
-        # # Get info about the current open cart
-        # response = self.client.get(url, None, format="json")
-        # first_cart = json.loads(response.content)
-        # first_cart_id = first_cart.id
-        # first_cart_lineitems = first_cart.lineitems
-        # self.assertEqual(len(first_cart_lineitems), 1)
-        # self.assertIsNone(first_cart.payment_type)
+        # Get info about the current open cart
+        response = self.client.get(url, None, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-        # # Add another product to the cart
-        # self.client.post(url, product_data, format="json")
+        cart_with_one_item = json.loads(response.content)
+        cart_with_one_item_id = cart_with_one_item["id"]
+        cart_with_one_item_lineitems = cart_with_one_item["lineitems"]
+        self.assertEqual(len(cart_with_one_item_lineitems), 1)
+        self.assertIsNone(cart_with_one_item["payment_type"])
 
-        # # Complete the order
+        # Add another product to the cart
+        self.client.post(url, product_data, format="json")
+        # self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        # Get info about the current open cart again
+        response = self.client.get(url, None, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        cart_with_two_items = json.loads(response.content)
+        cart_with_two_items_id = cart_with_two_items["id"]
+        cart_with_two_items_lineitems = cart_with_two_items["lineitems"]
+        self.assertEqual(len(cart_with_two_items_lineitems), 2)
+        self.assertIsNone(cart_with_one_item["payment_type"])
+
+        # Verify that the cart id has not changed
+        self.assertEqual(cart_with_one_item_id, cart_with_two_items_id)
+
+        # Complete the order
+        url = "/order/" + str(cart_with_one_item_id)
 
         # # Get orders and verify that len(response) is 1
         # url = "/orders"
