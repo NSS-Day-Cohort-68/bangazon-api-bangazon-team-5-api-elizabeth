@@ -41,7 +41,11 @@ class Cart(ViewSet):
         line_item.order = open_order
         line_item.save()
 
-        return Response({}, status=status.HTTP_204_NO_CONTENT)
+        serialized_order = OrderSerializer(
+            open_order, many=False, context={"request": request}
+        )
+
+        return Response(serialized_order.data, status=status.HTTP_201_CREATED)
 
     def destroy(self, request, pk=None):
         """
