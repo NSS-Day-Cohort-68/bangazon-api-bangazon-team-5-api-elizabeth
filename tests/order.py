@@ -1,9 +1,5 @@
 import json
-<<<<<<< HEAD
 from datetime import date, datetime
-=======
-import datetime
->>>>>>> cd77490 (lingering-date-issue)
 from rest_framework import status
 from rest_framework.test import APITestCase
 from django.db import models
@@ -37,6 +33,13 @@ class OrderTests(APITestCase):
 
         # Create a product
         url = "/products"
+        data = { "name": "Kite", "price": 14.99, "quantity": 60, "description": "It flies high", "category_id": 1, "location": "Pittsburgh" }
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token)
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.product = json.loads(response.content)
+
+        url = "/paymenttypes"
         data = {
             "name": "Kite",
             "price": 14.99,
@@ -47,7 +50,9 @@ class OrderTests(APITestCase):
         }
         self.client.credentials(HTTP_AUTHORIZATION="Token " + self.token)
         response = self.client.post(url, data, format="json")
+        json_response = json.loads(response.content)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.paymenttype = json.loads(response.content)
 
         # Create a payment type
         url = "/paymenttypes"
@@ -221,7 +226,7 @@ class OrderTests(APITestCase):
         """
         # Add product to order
         url = "/cart"
-        data = { "product_id": 1 }
+        data = { 'product_id': self.product.id }
         self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token)
         response = self.client.post(url, data, format='json')
 
@@ -245,7 +250,7 @@ class OrderTests(APITestCase):
 
 
         url = "/orders/1"
-        data = { "payment_type": 1 }
+        data = { "payment_type": self.paymenttype.id} 
         self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token)
         response = self.client.put(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
