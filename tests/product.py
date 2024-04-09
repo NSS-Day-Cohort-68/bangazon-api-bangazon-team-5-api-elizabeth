@@ -125,3 +125,7 @@ class ProductTests(APITestCase):
             Product.objects.get(id=product.id)
 
     # TODO: Product can be rated. Assert average rating exists.
+
+    def test_avg_rating(self):
+        
+
