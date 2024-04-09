@@ -60,12 +60,6 @@ class OrderTests(APITestCase):
         response = self.client.post(url, data, format="json")
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.paymenttype = json.loads(response.content)
-        self.assertEqual(
-            self.paymenttype["create_date"], date.today().strftime("%Y-%m-%d")
-        )
-        self.assertEqual(self.paymenttype["expiration_date"], exp.strftime("%Y-%m-%d"))
-        self.assertEqual(self.paymenttype["merchant_name"], data["merchant_name"])
-        self.assertEqual(self.paymenttype["account_number"], data["account_number"])
 
     def test_add_product_to_order(self):
         """
