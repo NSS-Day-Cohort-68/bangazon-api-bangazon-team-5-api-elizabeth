@@ -110,12 +110,14 @@ class ProductTests(APITestCase):
         self.test_create_product()
         self.test_create_product()
 
+        product_count = Product.objects.count()
+
         url = "/products"
 
         response = self.client.get(url, None, format="json")
         json_response = json.loads(response.content)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(json_response), 4)
+        self.assertEqual(len(json_response), product_count)
 
     def test_delete_product(self):
         product = Product.objects.create(
