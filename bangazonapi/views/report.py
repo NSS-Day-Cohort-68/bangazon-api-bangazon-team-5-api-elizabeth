@@ -30,7 +30,7 @@ def report(request):
 
 
 def expensive_products_report(request):
-    expensive_products = Product.objects.filter(price__gte=10000)
+    expensive_products = Product.objects.filter(price__gte=1000)
     return render(
         request,
         "expensive_products_report.html",
