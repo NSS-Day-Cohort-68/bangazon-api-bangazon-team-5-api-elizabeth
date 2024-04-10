@@ -1,0 +1,11 @@
+[
+  {
+    "model": "bangazonapi.store",
+    "pk": 1,
+    "fields": {
+      "name": "Brenda's Boutique",
+      "description": "Curated selection of chic fashion essentials and unique accessories, providing personalized style solutions for every occasion.",
+      "owner_id": 7
+    }
+  }
+]
