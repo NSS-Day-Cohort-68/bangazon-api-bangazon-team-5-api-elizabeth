@@ -14,6 +14,7 @@ from rest_framework import status
 from bangazonapi.models import Product, Customer, ProductCategory
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework.parsers import MultiPartParser, FormParser
+from django.shortcuts import get_object_or_404
 
 
 class ProductSerializer(serializers.ModelSerializer):
@@ -377,31 +378,41 @@ class Products(ViewSet):
     @action(methods=["post", "delete"], detail=True)
     def like(self, request, pk=None):
 
+        liker = get_object_or_404(Customer, user=request.auth.user)
+        product = get_object_or_404(Product, pk=pk)
+
         if request.method == "POST":
-            like = Like()
-            like.liker = Customer.objects.get(user=request.auth.user)
-            like.product = Product.objects.get(pk=pk)
+            try:
+                # Check if the user already liked the product
+                existing_like = Like.objects.get(product=product, liker=liker)
+                return Response(None, status=status.HTTP_405_METHOD_NOT_ALLOWED)
+            except Like.DoesNotExist:
+                # If there is no existing like, create a new one
+                like = Like(liker=liker, product=product)
+                like.save()
+                return Response(None, status=status.HTTP_204_NO_CONTENT)
 
-            like.save()
+        elif request.method == "DELETE":
+            try:
+                # Try to delete the like
+                like = Like.objects.get(product=product, liker=liker)
+                like.delete()
+                return Response(None, status=status.HTTP_204_NO_CONTENT)
+            except Like.DoesNotExist:
+                return Response(None, status=status.HTTP_404_NOT_FOUND)
 
-            return Response(None, status=status.HTTP_204_NO_CONTENT)
 
     
-        if request.method == "DELETE":
-            like = Product.objects.get(pk=pk)
-            like.delete()
-
-            return Response(None, status=status.HTTP_204_NO_CONTENT)
-        
-        return Response(None, status=status.HTTP_405_METHOD_NOT_ALLOWED)
-    
-    @action(methods=["get"], detail=True)
+    @action(methods=["get"], detail=False, url_path='liked')
     def liked(self, request):
+        """
+        Retrieves all products liked by the current user.
+        """
+        liker = Customer.objects.get(user=request.auth.user)
+        liked_products = Like.objects.filter(liker=liker).values_list('product', flat=True)
+        products = Product.objects.filter(id__in=liked_products)
 
-        if request.method == "GET":
-           liked = Like.objects.all()
-
-        serializer = ProductLikeSerializer(
-            liked, many=True, context={"request": request}
-             )
+        serializer = ProductSerializer(products, many=True, context={"request": request})
         return Response(serializer.data)
+    
+  
