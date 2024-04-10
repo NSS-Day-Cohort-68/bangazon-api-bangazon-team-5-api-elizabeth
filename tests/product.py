@@ -3,6 +3,7 @@ import datetime
 from rest_framework import status
 from rest_framework.test import APITestCase
 from bangazonapi.models.product import Product
+from bangazonapi.models.productrating import ProductRating
 
 
 class ProductTests(APITestCase):
@@ -127,5 +128,14 @@ class ProductTests(APITestCase):
     # TODO: Product can be rated. Assert average rating exists.
 
     def test_avg_rating(self):
-        
-
+        self.test_create_product()
+        url = "/products"
+        data = {
+            "name": "Kite",
+            "price": 14.99,
+            "quantity": 60,
+            "description": "It flies high",
+            "category_id": 1,
+            "location": "Pittsburgh",
+        }
+        response = self.client.post(url, data, format="json")
