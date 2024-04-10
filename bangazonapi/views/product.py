@@ -375,7 +375,7 @@ class Products(ViewSet):
 
             return Response(None, status=status.HTTP_200_OK)
     
-    @action(methods=["post", "delete"], detail=True)
+    @action(methods=["post", "delete", "get"], detail=True)
     def like(self, request, pk=None):
 
         liker = get_object_or_404(Customer, user=request.auth.user)
@@ -391,6 +391,10 @@ class Products(ViewSet):
                 like = Like(liker=liker, product=product)
                 like.save()
                 return Response(None, status=status.HTTP_204_NO_CONTENT)
+            
+        if request.method == "GET":
+            existing_like = Like.objects.filter(product=product, liker=liker).exists()
+            return Response({'liked': existing_like}, status=status.HTTP_200_OK)
 
         elif request.method == "DELETE":
             try:
