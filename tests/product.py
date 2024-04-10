@@ -35,19 +35,19 @@ class ProductTests(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(json_response["name"], "Sporting Goods")
-    
-        """
-        Create test product
-        """
-        data = {
-            "name": "Test Product",
-            "price": 1000.00,
-            "quantity": 2,
-            "description": "This is a test product",
-            "category_id": 1,
-            "location": "Narnia",
-        }
-        self.product = Product.objects.create(data, format="json")
+
+        # """
+        # Create test product
+        # """
+        # data = {
+        #     "name": "Test Product",
+        #     "price": 1000.00,
+        #     "quantity": 2,
+        #     "description": "This is a test product",
+        #     "category_id": 1,
+        #     "location": "Narnia",
+        # }
+        # self.product = Product.objects.create(data)
 
     def test_create_product(self):
         """
@@ -140,23 +140,23 @@ class ProductTests(APITestCase):
 
     # TODO: Product can be rated. Assert average rating exists.
 
-    def test_avg_rating(self):
-        # self.test_create_product()
-        # url = "/products"
-        # data = {
-        #     "name": "Kite",
-        #     "price": 14.99,
-        #     "quantity": 60,
-        #     "description": "It flies high",
-        #     "category_id": 1,
-        #     "location": "Pittsburgh",
-        # }
-        # response = self.client.post(url, data, format="json")
+    # def test_avg_rating(self):
+    # self.test_create_product()
+    # url = "/products"
+    # data = {
+    #     "name": "Kite",
+    #     "price": 14.99,
+    #     "quantity": 60,
+    #     "description": "It flies high",
+    #     "category_id": 1,
+    #     "location": "Pittsburgh",
+    # }
+    # response = self.client.post(url, data, format="json")
 
-        # setup - create product
+    # setup - create product
 
-        # can you add a rating to a product?
+    # can you add a rating to a product?
 
-        # does the avg_rating key exist?
+    # does the avg_rating key exist?
 
-        # does the avg_rating work?
+    # does the avg_rating work?
