@@ -7,6 +7,8 @@ from bangazonapi.models import *
 from bangazonapi.views import *
 from django.contrib import admin
 
+from bangazonapi.views.report import expensive_products_report
+
 # pylint: disable=invalid-name
 router = routers.DefaultRouter(trailing_slash=False)
 router.register(r"products", Products, "product")
@@ -29,5 +31,10 @@ urlpatterns = [
     path("api-token-auth", obtain_auth_token),
     path("api-auth", include("rest_framework.urls", namespace="rest_framework")),
     path("reports/orders", report, name="report"),
+    path(
+        "reports/expensiveproducts",
+        expensive_products_report,
+        name="expensive_products_report",
+    ),
     path("admin", admin.site.urls),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

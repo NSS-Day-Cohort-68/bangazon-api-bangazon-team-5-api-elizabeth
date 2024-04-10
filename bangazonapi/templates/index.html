@@ -1,24 +1,23 @@
 <!DOCTYPE html>
 <html>
-<head>
+  <head>
     <title>Unpaid Orders Report</title>
-</head>
-<body>
+  </head>
+  <body>
     <h1>Unpaid Orders Report</h1>
     <table>
-        <tr>
-            <th>Order ID</th>
-            <th>Customer Name</th>
-            <th>Total Cost</th>
-        </tr>
-        {% for order in report_data %}
-        <tr>
-            <td>{{ order.order_id }}</td>
-            <td>{{ order.customer_name }}</td>
-            <td>{{ order.total_cost|floatformat:2 }}</td>
-         
-        </tr>
-        {% endfor %}
+      <tr>
+        <th>Order ID</th>
+        <th>Customer Name</th>
+        <th>Total Cost</th>
+      </tr>
+      {% for order in report_data %}
+      <tr>
+        <td>{{ order.order_id }}</td>
+        <td>{{ order.customer_name }}</td>
+        <td>{{ order.total_cost|floatformat:2 }}</td>
+      </tr>
+      {% endfor %}
     </table>
-</body>
+  </body>
 </html>
