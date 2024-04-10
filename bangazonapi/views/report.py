@@ -36,3 +36,12 @@ def expensive_products_report(request):
         "expensive_products_report.html",
         {"expensive_products": expensive_products},
     )
+
+
+def inexpensive_products_report(request):
+    inexpensive_products = Product.objects.filter(price__lte=999)
+    return render(
+        request,
+        "inexpensive_products_report.html",
+        {"inexpensive_products": inexpensive_products},
+    )

@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Inexpensive Products Report</title>
+  </head>
+  <body>
+    <h1>Inexpensive Products Report</h1>
+    <table>
+      <tr>
+        <th>Product Id</th>
+        <th>Name</th>
+        <th>Price</th>
+      </tr>
+      {% for product in inexpensive_products %}
+      <tr>
+        <td>{{ product.id }}</td>
+        <td>{{ product.name }}</td>
+        <td>{{ product.price | floatformat:2 }}</td>
+      </tr>
+      {% endfor %}
+    </table>
+  </body>
+</html>
+</body>
+</html>
