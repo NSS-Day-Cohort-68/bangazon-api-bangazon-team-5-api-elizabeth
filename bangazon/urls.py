@@ -33,7 +33,7 @@ urlpatterns = [
     path("login", login_user),
     path("api-token-auth", obtain_auth_token),
     path("api-auth", include("rest_framework.urls", namespace="rest_framework")),
-    path("reports/orders", report, name="report"),
+    path("reports/orders", order_reports, name="report"),
     path(
         "reports/expensiveproducts",
         expensive_products_report,
