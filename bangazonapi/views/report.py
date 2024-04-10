@@ -27,3 +27,12 @@ def report(request):
         )
 
     return render(request, "index.html", {"report_data": report_data})
+
+
+def expensive_products_report(request):
+    expensive_products = Product.objects.filter(price__gte=10000)
+    return render(
+        request,
+        "expensive_products_report.html",
+        {"expensive_products": expensive_products},
+    )
