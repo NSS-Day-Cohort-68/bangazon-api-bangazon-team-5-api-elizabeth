@@ -3,7 +3,7 @@ from datetime import date, datetime
 from rest_framework import status
 from rest_framework.test import APITestCase
 from django.db import models
-
+import urllib.parse
 
 class OrderTests(APITestCase):
     def setUp(self) -> None:
@@ -22,14 +22,16 @@ class OrderTests(APITestCase):
         }
         response = self.client.post(url, data, format="json")
         json_response = json.loads(response.content)
+        self.customer = json.loads(response.content)
         self.token = json_response["token"]
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
         # Create a product category
         url = "/productcategories"
         data = {"name": "Sporting Goods"}
-        self.client.credentials(HTTP_AUTHORIZATION="Token " + self.token)
-        response = self.client.post(url, data, format="json")
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token)
+        self.category = json.loads(response.content)
+        response = self.client.post(url, data, format='json')
 
         # Create a product
         url = "/products"
@@ -262,13 +264,15 @@ class OrderTests(APITestCase):
         url = f"/orders/{self.order["id"]}"
         self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token)
         response = self.client.get(url, None, format='json')
+        customer_url = json_response["customer"]
+        customer_id = int(urllib.parse.urlparse(customer_url).path.split('/')[-1])
         json_response = json.loads(response.content)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(json_response["id"], 1)
-        self.assertEqual(json_response["customer"], "http://testserver/customers/1")
+        # self.assertEqual(json_response["customer"], self.customer["id"])
+        self.assertEqual(customer_id, self.customer["id"])
         self.assertEqual(json_response["created_date"], today)
-        self.assertEqual(json_response["payment_type_info"]["id"], 1)
+        self.assertEqual(json_response["payment_type_info"]["id"], self.paymenttype["id"])
         self.assertEqual(json_response["payment_type_info"]["url"], "http://testserver/paymenttypes/1")
         self.assertEqual(json_response["payment_type_info"]["merchant_name"], "American Express")
         self.assertEqual(json_response["payment_type_info"]["account_number"], "111-1111-1111")
@@ -279,7 +283,7 @@ class OrderTests(APITestCase):
         self.assertEqual(json_response["lineitems"][0]["product"]["price"],  14.99)
         self.assertEqual(json_response["lineitems"][0]["product"]["quantity"],  60)
         self.assertEqual(json_response["lineitems"][0]["product"]["description"],  "It flies high")
-        self.assertEqual(json_response["lineitems"][0]["product"]["category_id"],  1)
+        self.assertEqual(json_response["lineitems"][0]["product"]["category_id"],  self.category["id"])
         self.assertEqual(json_response["lineitems"][0]["product"]["location"],  "Pittsburgh")
 
     # TODO: New line item is not added to closed order
