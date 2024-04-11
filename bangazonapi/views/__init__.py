@@ -9,4 +9,4 @@ from .productcategory import ProductCategories
 from .lineitem import LineItems
 from .customer import Customers
 from .user import Users
-from .report import report
+from .report import order_reports
