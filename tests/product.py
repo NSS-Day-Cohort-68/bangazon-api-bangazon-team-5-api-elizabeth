@@ -6,6 +6,18 @@ from bangazonapi.models.product import Product
 from bangazonapi.models.productrating import ProductRating
 
 
+def create_product():
+    return Product.objects.create(
+        name="Test Product",
+        price=1000.00,
+        quantity=2,
+        description="This is a test product",
+        category_id=1,
+        location="Narnia",
+        customer_id=1,
+    )
+
+
 class ProductTests(APITestCase):
     def setUp(self) -> None:
         """
@@ -39,15 +51,7 @@ class ProductTests(APITestCase):
         """
         Create test product
         """
-        self.product = Product.objects.create(
-            name="Test Product",
-            price=1000.00,
-            quantity=2,
-            description="This is a test product",
-            category_id=1,
-            location="Narnia",
-            customer_id=1,
-        )
+        self.product = create_product()
 
     def test_create_product(self):
         """
@@ -106,9 +110,9 @@ class ProductTests(APITestCase):
         """
         Ensure we can get a collection of products.
         """
-        self.test_create_product()
-        self.test_create_product()
-        self.test_create_product()
+        create_product()
+        create_product()
+        create_product()
 
         product_count = Product.objects.count()
 
@@ -120,15 +124,6 @@ class ProductTests(APITestCase):
         self.assertEqual(len(json_response), product_count)
 
     def test_delete_product(self):
-        product = Product.objects.create(
-            name="Test Product",
-            price=10.00,
-            description="Test description",
-            quantity=20,
-            category_id=1,
-            location="Anytown, usa",
-            customer_id=1,
-        )
         url = f"/products/1"
 
         self.client.credentials(HTTP_AUTHORIZATION="Token " + self.token)
