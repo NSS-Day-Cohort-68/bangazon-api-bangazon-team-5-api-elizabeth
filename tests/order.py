@@ -264,13 +264,12 @@ class OrderTests(APITestCase):
         url = f"/orders/{self.order["id"]}"
         self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token)
         response = self.client.get(url, None, format='json')
-        customer_url = json_response["customer"]
-        customer_id = int(urllib.parse.urlparse(customer_url).path.split('/')[-1])
+        self.customer = json_response["complete_customer"]
         json_response = json.loads(response.content)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         # self.assertEqual(json_response["customer"], self.customer["id"])
-        self.assertEqual(customer_id, self.customer["id"])
+        self.assertEqual(json_response["complete_customer"]["id"], self.customer["id"])
         self.assertEqual(json_response["created_date"], today)
         self.assertEqual(json_response["payment_type_info"]["id"], self.paymenttype["id"])
         self.assertEqual(json_response["payment_type_info"]["url"], "http://testserver/paymenttypes/1")
