@@ -2,8 +2,6 @@ import json
 from datetime import date 
 from rest_framework import status
 from rest_framework.test import APITestCase
-from django.db import models
-import urllib.parse
 
 class OrderTests(APITestCase):
     def setUp(self) -> None:
@@ -30,8 +28,8 @@ class OrderTests(APITestCase):
         url = "/productcategories"
         data = {"name": "Sporting Goods"}
         self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token)
-        self.category = json.loads(response.content)
         response = self.client.post(url, data, format='json')
+        self.category = json.loads(response.content)
 
         # Create a product
         url = "/products"
@@ -244,8 +242,8 @@ class OrderTests(APITestCase):
         url = f"/orders/{self.order["id"]}"
         self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token)
         response = self.client.get(url, None, format='json')
-        self.customer = json_response["complete_customer"]
         json_response = json.loads(response.content)
+        self.customer = json_response["complete_customer"]
 
         today = str(date.today())
 
