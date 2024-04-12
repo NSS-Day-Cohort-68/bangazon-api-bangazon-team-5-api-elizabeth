@@ -353,8 +353,8 @@ class Products(ViewSet):
 
     @action(methods=["post"], detail=True)
     def rate_product(self, request, pk=None):
-        product = self.get_object()
-        rating = request.data.get("rating")
+        # product = self.get_object()
+        # rating = request.data.get("rating")
         # Process the rating data and update the product rating
         # ...
         return Response(None, status=status.HTTP_200_OK)

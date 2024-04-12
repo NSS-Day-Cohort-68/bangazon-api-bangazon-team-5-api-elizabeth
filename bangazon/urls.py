@@ -47,7 +47,7 @@ urlpatterns = [
     ),
     path("admin", admin.site.urls),
     path(
-        "products/<int:pk>/rate-product/",
+        "products/<int:pk>/rate-product",
         Products.as_view({"post": "rate_product"}),
         name="rate-product",
     ),
