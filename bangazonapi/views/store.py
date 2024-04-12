@@ -3,6 +3,7 @@ from rest_framework.response import Response
 from rest_framework import serializers
 from rest_framework import status
 from django.core.exceptions import ValidationError
+from django.db import IntegrityError
 from bangazonapi.models import Customer, Store
 from .profile import CustomerSerializer
 
@@ -23,24 +24,16 @@ class Stores(ViewSet):
         current_user = Customer.objects.get(user=request.auth.user)
 
         try:
-            if current_user.store.all().exists():
-                return Response(
-                    {"message": "A customer can only be associated with one store."},
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
-        except Exception:
+            new_store = Store.objects.create(
+                name=request.data["name"],
+                description=request.data["description"],
+                owner=current_user,
+            )
+        except (IntegrityError, ValueError, ValidationError) as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
-            try:
-                new_store = Store.objects.create(
-                    name=request.data["name"],
-                    description=request.data["description"],
-                    owner=current_user,
-                )
-            except (ValueError, ValidationError) as e:
-                return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
-
-            serializer = StoreSerializer(new_store, context={"request": request})
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        serializer = StoreSerializer(new_store, context={"request": request})
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     def list(self, request):
         stores = Store.objects.all()
