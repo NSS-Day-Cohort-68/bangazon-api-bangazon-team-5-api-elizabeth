@@ -243,7 +243,7 @@ class OrderTests(APITestCase):
         self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token)
         response = self.client.get(url, None, format='json')
         json_response = json.loads(response.content)
-        self.customer = json_response["complete_customer"]
+       
 
         today = str(date.today())
 
