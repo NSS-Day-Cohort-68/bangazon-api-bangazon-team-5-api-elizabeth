@@ -137,30 +137,30 @@ class ProductTests(APITestCase):
 
     # TODO: Product can be rated. Assert average rating exists.
 
-    def test_avg_rating(self):
-        # self.test_create_product()
-        # url = "/products"
-        # data = {
-        #     "name": "Kite",
-        #     "price": 14.99,
-        #     "quantity": 60,
-        #     "description": "It flies high",
-        #     "category_id": 1,
-        #     "location": "Pittsburgh",
-        # }
-        # response = self.client.post(url, data, format="json")
+    # def test_avg_rating(self):
+    # self.test_create_product()
+    # url = "/products"
+    # data = {
+    #     "name": "Kite",
+    #     "price": 14.99,
+    #     "quantity": 60,
+    #     "description": "It flies high",
+    #     "category_id": 1,
+    #     "location": "Pittsburgh",
+    # }
+    # response = self.client.post(url, data, format="json")
 
-        # setup - create product
+    # setup - create product
 
-        # can you add a rating to a product?
-        product_rating = 3
-        self.productrating = ProductRating.objects.create(
-            product_id=self.product.id,
-            customer_id=self.product.customer_id,
-            rating=product_rating,
-        )
+    # can you add a rating to a product?
+    # product_rating = 3
+    # self.productrating = ProductRating.objects.create(
+    #     product_id=self.product.id,
+    #     customer_id=self.product.customer_id,
+    #     rating=product_rating,
+    # )
 
-        # self.assertEqual(self.productrating.count(), 1)
-        # does the avg_rating key exist?
+    # self.assertEqual(self.productrating.count(), 1)
+    # does the avg_rating key exist?
 
-        # does the avg_rating work?
+    # does the avg_rating work?
