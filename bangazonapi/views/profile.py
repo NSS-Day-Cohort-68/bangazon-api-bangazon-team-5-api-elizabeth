@@ -395,10 +395,6 @@ class ProfileSerializer(serializers.ModelSerializer):
 
     user = UserSerializer(many=False)
     recommends = RecommenderSerializer(many=True)
-    has_store = serializers.SerializerMethodField()
-
-    def get_has_store(self, obj):
-        return Store.objects.filter(owner=obj).exists()
 
     class Meta:
         model = Customer
@@ -410,7 +406,7 @@ class ProfileSerializer(serializers.ModelSerializer):
             "address",
             "payment_types",
             "recommends",
-            "has_store",
+            "store",
         )
         depth = 1
 
