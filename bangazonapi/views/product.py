@@ -2,6 +2,7 @@
 
 from rest_framework.decorators import action
 from bangazonapi.models.recommendation import Recommendation
+from bangazonapi.models.productrating import ProductRating
 import base64
 from django.core.files.base import ContentFile
 from django.http import HttpResponseServerError
@@ -353,8 +354,14 @@ class Products(ViewSet):
 
     @action(methods=["post"], detail=True)
     def rate_product(self, request, pk=None):
-        # product = self.get_object()
-        # rating = request.data.get("rating")
-        # Process the rating data and update the product rating
-        # ...
-        return Response(None, status=status.HTTP_200_OK)
+        if request.method == "POST":
+            product_rating = ProductRating()
+            product_rating.product = Product.objects.get(pk=pk)
+            product_rating.customer = Customer.objects.get(user=request.auth.user)
+            product_rating.rating = request.data["score"]
+
+            product_rating.save()
+
+            return Response(None, status=status.HTTP_200_OK)
+
+        return Response(None, status=status.HTTP_405_METHOD_NOT_ALLOWED)
