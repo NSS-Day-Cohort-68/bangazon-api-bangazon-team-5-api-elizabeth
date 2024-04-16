@@ -46,4 +46,9 @@ urlpatterns = [
         name="inexpensive_products_report",
     ),
     path("admin", admin.site.urls),
+    path(
+        "products/<int:pk>/rate-product",
+        Products.as_view({"post": "rate_product"}),
+        name="rate-product",
+    ),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

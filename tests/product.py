@@ -3,6 +3,19 @@ import datetime
 from rest_framework import status
 from rest_framework.test import APITestCase
 from bangazonapi.models.product import Product
+from bangazonapi.models.productrating import ProductRating
+
+
+def create_product():
+    return Product.objects.create(
+        name="Test Product",
+        price=1000.00,
+        quantity=2,
+        description="This is a test product",
+        category_id=1,
+        location="Narnia",
+        customer_id=1,
+    )
 
 
 class ProductTests(APITestCase):
@@ -34,6 +47,11 @@ class ProductTests(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(json_response["name"], "Sporting Goods")
+
+        """
+        Create test product
+        """
+        self.product = create_product()
 
     def test_create_product(self):
         """
@@ -92,27 +110,20 @@ class ProductTests(APITestCase):
         """
         Ensure we can get a collection of products.
         """
-        self.test_create_product()
-        self.test_create_product()
-        self.test_create_product()
+        create_product()
+        create_product()
+        create_product()
+
+        product_count = Product.objects.count()
 
         url = "/products"
 
         response = self.client.get(url, None, format="json")
         json_response = json.loads(response.content)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(json_response), 3)
+        self.assertEqual(len(json_response), product_count)
 
     def test_delete_product(self):
-        product = Product.objects.create(
-            name="Test Product",
-            price=10.00,
-            description="Test description",
-            quantity=20,
-            category_id=1,
-            location="Anytown, usa",
-            customer_id=1,
-        )
         url = f"/products/1"
 
         self.client.credentials(HTTP_AUTHORIZATION="Token " + self.token)
@@ -122,6 +133,34 @@ class ProductTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
 
         with self.assertRaises(Product.DoesNotExist):
-            Product.objects.get(id=product.id)
+            Product.objects.get(id=self.product.id)
 
     # TODO: Product can be rated. Assert average rating exists.
+
+    # def test_avg_rating(self):
+    # self.test_create_product()
+    # url = "/products"
+    # data = {
+    #     "name": "Kite",
+    #     "price": 14.99,
+    #     "quantity": 60,
+    #     "description": "It flies high",
+    #     "category_id": 1,
+    #     "location": "Pittsburgh",
+    # }
+    # response = self.client.post(url, data, format="json")
+
+    # setup - create product
+
+    # can you add a rating to a product?
+    # product_rating = 3
+    # self.productrating = ProductRating.objects.create(
+    #     product_id=self.product.id,
+    #     customer_id=self.product.customer_id,
+    #     rating=product_rating,
+    # )
+
+    # self.assertEqual(self.productrating.count(), 1)
+    # does the avg_rating key exist?
+
+    # does the avg_rating work?

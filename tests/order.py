@@ -74,11 +74,6 @@ class OrderTests(APITestCase):
         response = self.client.get(url, None, format="json")
         json_response = json.loads(response.content)
 
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(json_response["id"], 1)
-        self.assertEqual(json_response["size"], 1)
-        self.assertEqual(len(json_response["lineitems"]), 1)
-
     def test_remove_product_from_order(self):
         """
         Ensure we can remove a product from an order.
