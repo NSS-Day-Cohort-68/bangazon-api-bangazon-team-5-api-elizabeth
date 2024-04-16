@@ -3,6 +3,7 @@
 from rest_framework.decorators import action
 from bangazonapi.models.recommendation import Recommendation
 from bangazonapi.models.productrating import ProductRating
+from bangazonapi.models.like import Like
 import base64
 from django.core.files.base import ContentFile
 from django.http import HttpResponseServerError
@@ -13,6 +14,7 @@ from rest_framework import status
 from bangazonapi.models import Product, Customer, ProductCategory
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework.parsers import MultiPartParser, FormParser
+from django.shortcuts import get_object_or_404
 
 
 class ProductSerializer(serializers.ModelSerializer):
@@ -36,6 +38,15 @@ class ProductSerializer(serializers.ModelSerializer):
         )
         depth = 1
 
+class ProductLikeSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Like
+    fields = (
+        "liker"
+        "product"
+    )
+    depth = 1
 
 class Products(ViewSet):
     """Request handlers for Products in the Bangazon Platform"""
@@ -363,5 +374,49 @@ class Products(ViewSet):
             product_rating.save()
 
             return Response(None, status=status.HTTP_200_OK)
+    
+    @action(methods=["post", "delete", "get"], detail=True)
+    def like(self, request, pk=None):
 
-        return Response(None, status=status.HTTP_405_METHOD_NOT_ALLOWED)
+        liker = get_object_or_404(Customer, user=request.auth.user)
+        product = get_object_or_404(Product, pk=pk)
+
+        if request.method == "POST":
+            try:
+                # Check if the user already liked the product
+                existing_like = Like.objects.get(product=product, liker=liker)
+                return Response(None, status=status.HTTP_405_METHOD_NOT_ALLOWED)
+            except Like.DoesNotExist:
+                # If there is no existing like, create a new one
+                like = Like(liker=liker, product=product)
+                like.save()
+                return Response(None, status=status.HTTP_204_NO_CONTENT)
+            
+        if request.method == "GET":
+            existing_like = Like.objects.filter(product=product, liker=liker).exists()
+            return Response({'liked': existing_like}, status=status.HTTP_200_OK)
+
+        elif request.method == "DELETE":
+            try:
+                # Try to delete the like
+                like = Like.objects.get(product=product, liker=liker)
+                like.delete()
+                return Response(None, status=status.HTTP_204_NO_CONTENT)
+            except Like.DoesNotExist:
+                return Response(None, status=status.HTTP_404_NOT_FOUND)
+
+
+    
+    @action(methods=["get"], detail=False, url_path='liked')
+    def liked(self, request):
+        """
+        Retrieves all products liked by the current user.
+        """
+        liker = Customer.objects.get(user=request.auth.user)
+        liked_products = Like.objects.filter(liker=liker).values_list('product', flat=True)
+        products = Product.objects.filter(id__in=liked_products)
+
+        serializer = ProductSerializer(products, many=True, context={"request": request})
+        return Response(serializer.data)
+    
+  
