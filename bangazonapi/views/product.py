@@ -11,7 +11,7 @@ from rest_framework.viewsets import ViewSet
 from rest_framework.response import Response
 from rest_framework import serializers
 from rest_framework import status
-from bangazonapi.models import Product, Customer, ProductCategory
+from bangazonapi.models import Product, Customer, ProductCategory, Store
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework.parsers import MultiPartParser, FormParser
 from django.shortcuts import get_object_or_404
@@ -38,15 +38,15 @@ class ProductSerializer(serializers.ModelSerializer):
         )
         depth = 1
 
+
 class ProductLikeSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Like
-    fields = (
-        "liker"
-        "product"
-    )
+
+    fields = "liker" "product"
     depth = 1
+
 
 class Products(ViewSet):
     """Request handlers for Products in the Bangazon Platform"""
@@ -304,6 +304,7 @@ class Products(ViewSet):
         quantity = self.request.query_params.get("quantity", None)
         order = self.request.query_params.get("order_by", None)
         direction = self.request.query_params.get("direction", None)
+        store = self.request.query_params.get("store", None)
         number_sold = self.request.query_params.get("number_sold", None)
         min_price = self.request.query_params.get("min_price", None)
         name = self.request.query_params.get("name", None)
@@ -323,6 +324,10 @@ class Products(ViewSet):
 
         if quantity is not None:
             products = products.order_by("-created_date")[: int(quantity)]
+
+        if store is not None:
+            found_store = Store.objects.get(pk=store)
+            products = products.filter(customer=found_store.owner)
 
         if number_sold is not None:
 
@@ -374,7 +379,7 @@ class Products(ViewSet):
             product_rating.save()
 
             return Response(None, status=status.HTTP_200_OK)
-    
+
     @action(methods=["post", "delete", "get"], detail=True)
     def like(self, request, pk=None):
 
@@ -391,10 +396,10 @@ class Products(ViewSet):
                 like = Like(liker=liker, product=product)
                 like.save()
                 return Response(None, status=status.HTTP_204_NO_CONTENT)
-            
+
         if request.method == "GET":
             existing_like = Like.objects.filter(product=product, liker=liker).exists()
-            return Response({'liked': existing_like}, status=status.HTTP_200_OK)
+            return Response({"liked": existing_like}, status=status.HTTP_200_OK)
 
         elif request.method == "DELETE":
             try:
@@ -405,18 +410,18 @@ class Products(ViewSet):
             except Like.DoesNotExist:
                 return Response(None, status=status.HTTP_404_NOT_FOUND)
 
-
-    
-    @action(methods=["get"], detail=False, url_path='liked')
+    @action(methods=["get"], detail=False, url_path="liked")
     def liked(self, request):
         """
         Retrieves all products liked by the current user.
         """
         liker = Customer.objects.get(user=request.auth.user)
-        liked_products = Like.objects.filter(liker=liker).values_list('product', flat=True)
+        liked_products = Like.objects.filter(liker=liker).values_list(
+            "product", flat=True
+        )
         products = Product.objects.filter(id__in=liked_products)
 
-        serializer = ProductSerializer(products, many=True, context={"request": request})
+        serializer = ProductSerializer(
+            products, many=True, context={"request": request}
+        )
         return Response(serializer.data)
-    
-  

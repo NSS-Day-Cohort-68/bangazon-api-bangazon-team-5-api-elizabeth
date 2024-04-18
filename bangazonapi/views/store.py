@@ -4,8 +4,20 @@ from rest_framework import serializers
 from rest_framework import status
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError
-from bangazonapi.models import Customer, Store
+from bangazonapi.models import Customer, Store, Product
+from bangazonapi.views.product import ProductSerializer
 from .profile import CustomerSerializer
+
+
+class StoreProductsSerializer(serializers.ModelSerializer):
+    """JSON serializer for stores"""
+
+    owner = CustomerSerializer(many=False, read_only=True)
+    products = ProductSerializer(many=True)
+
+    class Meta:
+        model = Store
+        fields = ("id", "name", "description", "owner", "products", "products_sold")
 
 
 class StoreSerializer(serializers.ModelSerializer):
@@ -43,7 +55,9 @@ class Stores(ViewSet):
     def retrieve(self, request, pk=None):
         try:
             store = Store.objects.get(pk=pk)
-            serializer = StoreSerializer(
+            products = store.owner.products.all()
+            store.products = products
+            serializer = StoreProductsSerializer(
                 store, many=False, context={"request": request}
             )
             return Response(serializer.data)
