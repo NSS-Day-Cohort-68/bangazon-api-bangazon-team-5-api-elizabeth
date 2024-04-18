@@ -364,7 +364,7 @@ class Products(ViewSet):
         if request.method == "POST":
             rec = Recommendation()
             rec.recommender = Customer.objects.get(user=request.auth.user)
-            rec.customer = Customer.objects.get(user__id=request.data["recipient"])
+            rec.customer = Customer.objects.get(user__username=request.data["username"])
             rec.product = Product.objects.get(pk=pk)
 
             rec.save()
