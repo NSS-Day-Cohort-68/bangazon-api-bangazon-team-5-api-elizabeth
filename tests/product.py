@@ -53,6 +53,8 @@ class ProductTests(APITestCase):
         """
         self.product = create_product()
 
+        self.customer_id = 6
+
     def test_create_product(self):
         """
         Ensure we can create a new product.
