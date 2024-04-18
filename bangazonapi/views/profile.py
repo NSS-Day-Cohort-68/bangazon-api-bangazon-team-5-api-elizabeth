@@ -316,10 +316,32 @@ class Profile(ViewSet):
 
             customer = Customer.objects.get(user=request.user)
             store = Store.objects.get(pk=request.data["store_id"])
+            stores = Store.objects.all()
 
             x = 1
 
-        # if request.method == "POST":
+        if request.method == "POST":
+            user = request.user
+            store_id = request.data.get("store_id")
+
+            if not store_id:
+                return Response(
+                    {"error": "Store ID is required"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+            try:
+                store = Store.objects.get(pk=store_id)
+            except Store.DoesNotExist:
+                return Response(
+                    {"error": "Store not found"}, status=status.HTTP_404_NOT_FOUND
+                )
+
+            favorite = Favorite.objects.create(user=user, store=store)
+
+            return Response(
+                {"success": "Store added to favorites"}, status=status.HTTP_201_CREATED
+            )
 
         # serializer = FavoriteSerializer(
         #     store, many=True, context={"request": request}
@@ -447,7 +469,7 @@ class FavoriteUserSerializer(serializers.HyperlinkedModelSerializer):
         depth = 1
 
 
-class FavoriteSellerSerializer(serializers.HyperlinkedModelSerializer):
+class FavoriteStoreSerializer(serializers.HyperlinkedModelSerializer):
     """JSON serializer for favorite sellers
 
     Arguments:
@@ -473,9 +495,9 @@ class FavoriteSerializer(serializers.HyperlinkedModelSerializer):
         serializers
     """
 
-    seller = FavoriteSellerSerializer(many=False)
+    store = FavoriteStoreSerializer(many=False)
 
     class Meta:
         model = Favorite
-        fields = ("id", "seller")
+        fields = ("id", "store")
         depth = 2

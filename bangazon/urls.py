@@ -51,9 +51,9 @@ urlpatterns = [
         name="rate-product",
     ),
     path("products/liked/", Products.as_view({"get": "liked"}), name="liked-products"),
-    # path(
-    #     "profile/favoritestores",
-    #     Profile.as_view({"post": "favoritestores"}),
-    #     name="favorite-stores-list",
-    # ),
+    path(
+        "profile/favoritestores",
+        Profile.as_view({"post": "favoritestores"}),
+        name="favorite-stores-list",
+    ),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
