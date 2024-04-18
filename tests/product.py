@@ -53,6 +53,8 @@ class ProductTests(APITestCase):
         """
         self.product = create_product()
 
+        self.customer_id = 6
+
     def test_create_product(self):
         """
         Ensure we can create a new product.
@@ -137,30 +139,37 @@ class ProductTests(APITestCase):
 
     # TODO: Product can be rated. Assert average rating exists.
 
-    # def test_avg_rating(self):
-    # self.test_create_product()
-    # url = "/products"
-    # data = {
-    #     "name": "Kite",
-    #     "price": 14.99,
-    #     "quantity": 60,
-    #     "description": "It flies high",
-    #     "category_id": 1,
-    #     "location": "Pittsburgh",
-    # }
-    # response = self.client.post(url, data, format="json")
+    def test_avg_rating(self):
 
-    # setup - create product
+        # can you add a rating to a product?
+        rating_url = f"/products/{self.product.id}/rate-product"
 
-    # can you add a rating to a product?
-    # product_rating = 3
-    # self.productrating = ProductRating.objects.create(
-    #     product_id=self.product.id,
-    #     customer_id=self.product.customer_id,
-    #     rating=product_rating,
-    # )
+        rating_data = {
+            "score": 3,
+        }
 
-    # self.assertEqual(self.productrating.count(), 1)
-    # does the avg_rating key exist?
+        self.client.credentials(HTTP_AUTHORIZATION="Token " + self.token)
+        response = self.client.post(rating_url, rating_data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-    # does the avg_rating work?
+        # on a product, does the avg_rating key exist?
+        product_url = f"/products/{self.product.id}"
+
+        # product_data = {
+        #     "name": self.product.name,
+        #     "price": self.product.price,
+        #     "quantity": self.product.quantity,
+        #     "description": self.product.quantity,
+        #     "category_id": self.product.category_id,
+        #     "location": self.product.location,
+        #     "customer_id": self.product.customer_id,
+        # }
+
+        self.client.credentials(HTTP_AUTHORIZATION="Token " + self.token)
+        response = self.client.get(product_url, None, format="json")
+        json_response = json.loads(response.content)
+
+        print("avg rating", json_response["average_rating"])
+        self.assertEqual(json_response["average_rating"], 3)
+
+        # on a product, is the avg_rating correct?
