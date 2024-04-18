@@ -312,14 +312,6 @@ class Profile(ViewSet):
             ]
         """
 
-        # if request.method == "GET":
-
-        #     customer = Customer.objects.get(user=request.user)
-        #     store = Store.objects.get(pk=request.data["store_id"])
-        #     stores = Store.objects.all()
-
-        #     x = 1
-
         if request.method == "POST":
             user = request.user
             store_id = request.data.get("store_id")
