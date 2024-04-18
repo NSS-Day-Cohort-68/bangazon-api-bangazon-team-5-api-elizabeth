@@ -149,27 +149,29 @@ class ProductTests(APITestCase):
         }
 
         self.client.credentials(HTTP_AUTHORIZATION="Token " + self.token)
-        response = self.client.post(rating_url, rating_data, format="json")
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        add_rating_response = self.client.post(rating_url, rating_data, format="json")
+        self.assertEqual(add_rating_response.status_code, status.HTTP_201_CREATED)
 
         # on a product, does the avg_rating key exist?
         product_url = f"/products/{self.product.id}"
 
-        # product_data = {
-        #     "name": self.product.name,
-        #     "price": self.product.price,
-        #     "quantity": self.product.quantity,
-        #     "description": self.product.quantity,
-        #     "category_id": self.product.category_id,
-        #     "location": self.product.location,
-        #     "customer_id": self.product.customer_id,
-        # }
-
         self.client.credentials(HTTP_AUTHORIZATION="Token " + self.token)
-        response = self.client.get(product_url, None, format="json")
-        json_response = json.loads(response.content)
-
-        print("avg rating", json_response["average_rating"])
-        self.assertEqual(json_response["average_rating"], 3)
+        rating_exist_response = self.client.get(product_url, None, format="json")
+        json_response = json.loads(rating_exist_response.content)
+        res_avg_rating = json_response["average_rating"]
+        # print("avg rating", res_avg_rating)
+        self.assertEqual(bool(res_avg_rating), True)
 
         # on a product, is the avg_rating correct?
+        # add another rating
+        rating_one_data = {
+            "score": 4,
+        }
+        self.client.credentials(HTTP_AUTHORIZATION="Token " + self.token)
+        self.client.post(rating_url, rating_one_data, format="json")
+        # is the avg_rating correct?
+        get = self.client.get(product_url, None, format="json")
+        res = json.loads(get.content)
+        average_rating = res["average_rating"]
+        print("average_rating", average_rating)
+        self.assertEqual(average_rating, 3.5)
