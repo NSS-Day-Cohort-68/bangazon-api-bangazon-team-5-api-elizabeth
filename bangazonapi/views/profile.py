@@ -8,7 +8,7 @@ from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
 from rest_framework.viewsets import ViewSet
-from bangazonapi.models import Order, Customer, Product, Store
+from bangazonapi.models import Order, Customer, Product, Like
 from bangazonapi.models import OrderProduct, Favorite
 from bangazonapi.models import Recommendation
 from .product import ProductSerializer
@@ -444,10 +444,7 @@ class ProfileProductSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Product
-        fields = (
-            "id",
-            "name",
-        )
+        fields = ("id", "name", "image_path", "price", "description")
 
 
 class RecommenderSerializer(serializers.ModelSerializer):
@@ -464,6 +461,25 @@ class RecommenderSerializer(serializers.ModelSerializer):
         )
 
 
+class RecommendationSerializer(serializers.ModelSerializer):
+    """JSON serializer for products recommended to a customer"""
+
+    product = ProfileProductSerializer()
+    recommender = CustomerSerializer()
+
+    class Meta:
+        model = Recommendation
+        fields = ("product", "recommender")
+
+
+class LikeSerializer(serializers.ModelSerializer):
+    product = ProfileProductSerializer()
+
+    class Meta:
+        model = Like
+        fields = ("product",)
+
+
 class ProfileSerializer(serializers.ModelSerializer):
     """JSON serializer for customer profile
 
@@ -472,7 +488,9 @@ class ProfileSerializer(serializers.ModelSerializer):
     """
 
     user = UserSerializer(many=False)
-    recommends = RecommenderSerializer(many=True)
+    recommender = RecommenderSerializer(many=True)
+    recommendations = RecommendationSerializer(many=True)
+    likes = LikeSerializer(many=True)
 
     class Meta:
         model = Customer
@@ -483,7 +501,9 @@ class ProfileSerializer(serializers.ModelSerializer):
             "phone_number",
             "address",
             "payment_types",
-            "recommends",
+            "recommender",
+            "recommendations",
+            "likes",
             "store",
         )
         depth = 1
