@@ -25,7 +25,6 @@ router.register(r"paymenttypes", Payments, "payment")
 router.register(r"profile", Profile, "profile")
 router.register(r"stores", Stores, "store")
 
-
 # Wire up our API using automatic URL routing.
 # Additionally, we include login URLs for the browsable API.
 urlpatterns = [
@@ -51,5 +50,5 @@ urlpatterns = [
         Products.as_view({"post": "rate_product"}),
         name="rate-product",
     ),
-    path("products/liked/", Products.as_view({"get": "liked"}), name="liked-products")
+    path("products/liked/", Products.as_view({"get": "liked"}), name="liked-products"),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

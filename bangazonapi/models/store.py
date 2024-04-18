@@ -1,5 +1,5 @@
 from django.db import models
-from .customer import Customer
+from .customer import Customer, User
 
 
 class Store(models.Model):
