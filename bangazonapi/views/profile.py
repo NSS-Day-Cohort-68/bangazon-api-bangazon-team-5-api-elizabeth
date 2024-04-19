@@ -8,7 +8,7 @@ from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
 from rest_framework.viewsets import ViewSet
-from bangazonapi.models import Order, Customer, Product, Like
+from bangazonapi.models import Order, Customer, Product, Like, Store
 from bangazonapi.models import OrderProduct, Favorite
 from bangazonapi.models import Recommendation
 from .product import ProductSerializer
@@ -87,6 +87,7 @@ class Profile(ViewSet):
             current_user.recommends = Recommendation.objects.filter(
                 recommender=current_user
             )
+            current_user.favorites = Favorite.objects.filter(user=request.auth.user)
 
             serializer = ProfileSerializer(
                 current_user, many=False, context={"request": request}
@@ -480,35 +481,6 @@ class LikeSerializer(serializers.ModelSerializer):
         fields = ("product",)
 
 
-class ProfileSerializer(serializers.ModelSerializer):
-    """JSON serializer for customer profile
-
-    Arguments:
-        serializers
-    """
-
-    user = UserSerializer(many=False)
-    recommender = RecommenderSerializer(many=True)
-    recommendations = RecommendationSerializer(many=True)
-    likes = LikeSerializer(many=True)
-
-    class Meta:
-        model = Customer
-        fields = (
-            "id",
-            "url",
-            "user",
-            "phone_number",
-            "address",
-            "payment_types",
-            "recommender",
-            "recommendations",
-            "likes",
-            "store",
-        )
-        depth = 1
-
-
 class FavoriteUserSerializer(serializers.HyperlinkedModelSerializer):
     """JSON serializer for favorite sellers user
 
@@ -529,14 +501,14 @@ class FavoriteStoreSerializer(serializers.HyperlinkedModelSerializer):
         serializers
     """
 
-    user = FavoriteUserSerializer(many=False)
+    owner = CustomerSerializer(many=False)
 
     class Meta:
-        model = Customer
+        model = Store
         fields = (
             "id",
             "url",
-            "user",
+            "owner",
         )
         depth = 1
 
@@ -554,3 +526,34 @@ class FavoriteSerializer(serializers.HyperlinkedModelSerializer):
         model = Favorite
         fields = ("id", "store")
         depth = 2
+
+
+class ProfileSerializer(serializers.ModelSerializer):
+    """JSON serializer for customer profile
+
+    Arguments:
+        serializers
+    """
+
+    user = UserSerializer(many=False)
+    recommender = RecommenderSerializer(many=True)
+    recommendations = RecommendationSerializer(many=True)
+    likes = LikeSerializer(many=True)
+    favorites = FavoriteSerializer(many=True)
+
+    class Meta:
+        model = Customer
+        fields = (
+            "id",
+            "url",
+            "user",
+            "phone_number",
+            "address",
+            "payment_types",
+            "recommender",
+            "recommendations",
+            "likes",
+            "favorites",
+            "store",
+        )
+        depth = 1
