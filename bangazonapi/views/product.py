@@ -383,7 +383,7 @@ class Products(ViewSet):
 
             product_rating.save()
 
-            return Response(None, status=status.HTTP_200_OK)
+            return Response(None, status=status.HTTP_201_CREATED)
 
     @action(methods=["post", "delete", "get"], detail=True)
     def like(self, request, pk=None):

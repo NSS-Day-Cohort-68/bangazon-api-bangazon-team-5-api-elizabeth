@@ -81,7 +81,6 @@ class ProductTests(APITestCase):
         """
         Ensure we can update a product.
         """
-        self.test_create_product()
 
         url = "/products/1"
         data = {
@@ -137,30 +136,40 @@ class ProductTests(APITestCase):
 
     # TODO: Product can be rated. Assert average rating exists.
 
-    # def test_avg_rating(self):
-    # self.test_create_product()
-    # url = "/products"
-    # data = {
-    #     "name": "Kite",
-    #     "price": 14.99,
-    #     "quantity": 60,
-    #     "description": "It flies high",
-    #     "category_id": 1,
-    #     "location": "Pittsburgh",
-    # }
-    # response = self.client.post(url, data, format="json")
+    def test_avg_rating(self):
+        """
+        Ensure we can rate a product, the avg_rating key exists, and the avg_rating is correct.
+        """
 
-    # setup - create product
+        self.client.credentials(HTTP_AUTHORIZATION="Token " + self.token)
 
-    # can you add a rating to a product?
-    # product_rating = 3
-    # self.productrating = ProductRating.objects.create(
-    #     product_id=self.product.id,
-    #     customer_id=self.product.customer_id,
-    #     rating=product_rating,
-    # )
+        # can you add a rating to a product?
+        rating_url = f"/products/{self.product.id}/rate-product"
 
-    # self.assertEqual(self.productrating.count(), 1)
-    # does the avg_rating key exist?
+        rating_one_data = {
+            "score": 3,
+        }
 
-    # does the avg_rating work?
+        response = self.client.post(rating_url, rating_one_data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        # on a product, does the avg_rating key exist?
+        product_url = f"/products/{self.product.id}"
+
+        response = self.client.get(product_url, None, format="json")
+        res = json.loads(response.content)
+        # If the average_rating key does not exist, the avg_rating would be equal to None
+        avg_rating = res["average_rating"]
+        # If avg_rating is None, the test will fail
+        self.assertIsNotNone(avg_rating)
+
+        # on a product, is the avg_rating correct?
+        rating_two_data = {
+            "score": 4,
+        }
+        self.client.post(rating_url, rating_two_data, format="json")
+
+        response = self.client.get(product_url, None, format="json")
+        res = json.loads(response.content)
+        average_rating = res["average_rating"]
+        self.assertEqual(average_rating, 3.5)
