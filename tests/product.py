@@ -83,7 +83,6 @@ class ProductTests(APITestCase):
         """
         Ensure we can update a product.
         """
-        self.test_create_product()
 
         url = "/products/1"
         data = {
@@ -140,38 +139,39 @@ class ProductTests(APITestCase):
     # TODO: Product can be rated. Assert average rating exists.
 
     def test_avg_rating(self):
+        """
+        Ensure we can rate a product, the avg_rating key exists, and the avg_rating is correct.
+        """
+
+        self.client.credentials(HTTP_AUTHORIZATION="Token " + self.token)
 
         # can you add a rating to a product?
         rating_url = f"/products/{self.product.id}/rate-product"
 
-        rating_data = {
+        rating_one_data = {
             "score": 3,
         }
 
-        self.client.credentials(HTTP_AUTHORIZATION="Token " + self.token)
-        add_rating_response = self.client.post(rating_url, rating_data, format="json")
-        self.assertEqual(add_rating_response.status_code, status.HTTP_201_CREATED)
+        response = self.client.post(rating_url, rating_one_data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
         # on a product, does the avg_rating key exist?
         product_url = f"/products/{self.product.id}"
 
-        self.client.credentials(HTTP_AUTHORIZATION="Token " + self.token)
-        rating_exist_response = self.client.get(product_url, None, format="json")
-        json_response = json.loads(rating_exist_response.content)
-        res_avg_rating = json_response["average_rating"]
-        # print("avg rating", res_avg_rating)
-        self.assertEqual(bool(res_avg_rating), True)
+        response = self.client.get(product_url, None, format="json")
+        res = json.loads(response.content)
+        # If the average_rating key does not exist, the avg_rating would be equal to None
+        avg_rating = res["average_rating"]
+        # If avg_rating is None, the test will fail
+        self.assertIsNotNone(avg_rating)
 
         # on a product, is the avg_rating correct?
-        # add another rating
-        rating_one_data = {
+        rating_two_data = {
             "score": 4,
         }
-        self.client.credentials(HTTP_AUTHORIZATION="Token " + self.token)
-        self.client.post(rating_url, rating_one_data, format="json")
-        # is the avg_rating correct?
-        get = self.client.get(product_url, None, format="json")
-        res = json.loads(get.content)
+        self.client.post(rating_url, rating_two_data, format="json")
+
+        response = self.client.get(product_url, None, format="json")
+        res = json.loads(response.content)
         average_rating = res["average_rating"]
-        print("average_rating", average_rating)
         self.assertEqual(average_rating, 3.5)
