@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from bangazonapi.models import Order, Customer, OrderProduct, Product
+from bangazonapi.models import Order, Customer, OrderProduct, Product, Favorite
 from django.contrib.auth.models import User
 
 
@@ -86,4 +86,12 @@ def inexpensive_products_report(request):
         request,
         "inexpensive_products_report.html",
         {"inexpensive_products": inexpensive_products},
+    )
+
+def favorite_stores_report(request):
+    favorite_stores = Favorite.objects.all()
+    return render(
+        request,
+        "favorite_stores_report.html",
+        {"favorite_stores": favorite_stores}
     )
