@@ -34,6 +34,7 @@ class ProductSerializer(serializers.ModelSerializer):
             "image_path",
             "average_rating",
             "can_be_rated",
+            "customer_id",
             "category_id",
         )
         depth = 1
@@ -309,6 +310,7 @@ class Products(ViewSet):
         min_price = self.request.query_params.get("min_price", None)
         name = self.request.query_params.get("name", None)
         location = self.request.query_params.get("location", None)
+        customer = self.request.query_params.get("customer", None)
 
         if order is not None:
             order_filter = order
@@ -346,6 +348,9 @@ class Products(ViewSet):
 
         if location is not None:
             products = products.filter(location__icontains=location)
+
+        if customer is not None:
+            products = products.filter(customer=customer)
 
         serializer = ProductSerializer(
             products, many=True, context={"request": request}
