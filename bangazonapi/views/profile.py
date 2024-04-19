@@ -508,6 +508,8 @@ class FavoriteStoreSerializer(serializers.HyperlinkedModelSerializer):
         fields = (
             "id",
             "url",
+            "name",
+            "description",
             "owner",
         )
         depth = 1
