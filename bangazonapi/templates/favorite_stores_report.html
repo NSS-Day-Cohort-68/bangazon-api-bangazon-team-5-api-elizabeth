@@ -1,0 +1,26 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Favorite Stores Report</title>
+</head>
+<body>
+    <h1>Favorite Stores Report For Customer: {{ user.username }}</h1>
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for favorite in favorite_stores %}
+            <tr>
+                <td>{{ favorite.store.id }}</td>
+                <td>{{ favorite.store.name }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>

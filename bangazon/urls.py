@@ -10,6 +10,7 @@ from django.contrib import admin
 from bangazonapi.views.report import (
     expensive_products_report,
     inexpensive_products_report,
+    favorite_stores_report
 )
 
 # pylint: disable=invalid-name
@@ -49,6 +50,11 @@ urlpatterns = [
         "products/<int:pk>/rate-product",
         Products.as_view({"post": "rate_product"}),
         name="rate-product",
+    ),
+    path(
+        "reports/favoritestores",
+        favorite_stores_report,
+        name="favorite_stores_report",
     ),
     path("products/liked/", Products.as_view({"get": "liked"}), name="liked-products"),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
