@@ -1,21 +1,26 @@
+
 <!DOCTYPE html>
 <html>
-  <head>
-    <title>{{ html.title }}</title>
-  </head>
-  <body>
-    <h1>{{ html.heading }}</h1>
+<head>
+    <title>Favorite Stores Report</title>
+</head>
+<body>
+    <h1>Favorite Stores Report For Customer: {{ user.username }}</h1>
     <table>
-      <tr>
-        <th>Favorites</th>
-        <th>Customer Name</th>
-
-      {% for favorite in report_data %}
-      <tr>
-        <td>{{ favorite.user}}</td>
-        <td>{{ favorite.store }}</td>
-      </tr>
-      {% endfor %} 
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for favorite in favorite_stores %}
+            <tr>
+                <td>{{ favorite.store.id }}</td>
+                <td>{{ favorite.store.name }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
     </table>
-  </body>
+</body>
 </html>

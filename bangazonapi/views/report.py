@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import get_object_or_404, render
 from bangazonapi.models import Order, Customer, OrderProduct, Product, Favorite
 from django.contrib.auth.models import User
 
@@ -89,9 +89,15 @@ def inexpensive_products_report(request):
     )
 
 def favorite_stores_report(request):
-    favorite_stores = Favorite.objects.all()
+    customer_pk = request.GET.get("customer")
+    if customer_pk is None:
+        # Handle the case when customer_pk is not provided
+        return render(request, "error.html", {"error_message": "Customer primary key is missing."})
+    customer = Customer.objects.get(pk=customer_pk)
+    user = customer.user
+    favorite_stores = Favorite.objects.filter(user_id=user.id)
     return render(
         request,
         "favorite_stores_report.html",
-        {"favorite_stores": favorite_stores}
+        {"favorite_stores": favorite_stores, "user": user}
     )
