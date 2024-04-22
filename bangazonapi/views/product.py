@@ -2,6 +2,8 @@
 
 from rest_framework.decorators import action
 from bangazonapi.models.recommendation import Recommendation
+from bangazonapi.models.productrating import ProductRating
+from bangazonapi.models.like import Like
 import base64
 from django.core.files.base import ContentFile
 from django.http import HttpResponseServerError
@@ -9,9 +11,10 @@ from rest_framework.viewsets import ViewSet
 from rest_framework.response import Response
 from rest_framework import serializers
 from rest_framework import status
-from bangazonapi.models import Product, Customer, ProductCategory
+from bangazonapi.models import Product, Customer, ProductCategory, Store
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework.parsers import MultiPartParser, FormParser
+from django.shortcuts import get_object_or_404
 
 
 class ProductSerializer(serializers.ModelSerializer):
@@ -31,9 +34,19 @@ class ProductSerializer(serializers.ModelSerializer):
             "image_path",
             "average_rating",
             "can_be_rated",
+            "customer_id",
             "category_id",
         )
         depth = 1
+
+
+class ProductLikeSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Like
+
+    fields = "liker" "product"
+    depth = 1
 
 
 class Products(ViewSet):
@@ -292,9 +305,12 @@ class Products(ViewSet):
         quantity = self.request.query_params.get("quantity", None)
         order = self.request.query_params.get("order_by", None)
         direction = self.request.query_params.get("direction", None)
+        store = self.request.query_params.get("store", None)
         number_sold = self.request.query_params.get("number_sold", None)
         min_price = self.request.query_params.get("min_price", None)
         name = self.request.query_params.get("name", None)
+        location = self.request.query_params.get("location", None)
+        customer = self.request.query_params.get("customer", None)
 
         if order is not None:
             order_filter = order
@@ -311,6 +327,10 @@ class Products(ViewSet):
         if quantity is not None:
             products = products.order_by("-created_date")[: int(quantity)]
 
+        if store is not None:
+            found_store = Store.objects.get(pk=store)
+            products = products.filter(customer=found_store.owner)
+
         if number_sold is not None:
 
             def sold_filter(product):
@@ -323,8 +343,14 @@ class Products(ViewSet):
         if min_price is not None:
             products = products.filter(price__gte=min_price)
 
-        if name is not None: 
+        if name is not None:
             products = products.filter(name__icontains=name)
+
+        if location is not None:
+            products = products.filter(location__icontains=location)
+
+        if customer is not None:
+            products = products.filter(customer=customer)
 
         serializer = ProductSerializer(
             products, many=True, context={"request": request}
@@ -338,7 +364,7 @@ class Products(ViewSet):
         if request.method == "POST":
             rec = Recommendation()
             rec.recommender = Customer.objects.get(user=request.auth.user)
-            rec.customer = Customer.objects.get(user__id=request.data["recipient"])
+            rec.customer = Customer.objects.get(user__username=request.data["username"])
             rec.product = Product.objects.get(pk=pk)
 
             rec.save()
@@ -346,3 +372,61 @@ class Products(ViewSet):
             return Response(None, status=status.HTTP_204_NO_CONTENT)
 
         return Response(None, status=status.HTTP_405_METHOD_NOT_ALLOWED)
+
+    @action(methods=["post"], detail=True)
+    def rate_product(self, request, pk=None):
+        if request.method == "POST":
+            product_rating = ProductRating()
+            product_rating.product = Product.objects.get(pk=pk)
+            product_rating.customer = Customer.objects.get(user=request.auth.user)
+            product_rating.rating = request.data["score"]
+
+            product_rating.save()
+
+            return Response(None, status=status.HTTP_201_CREATED)
+
+    @action(methods=["post", "delete", "get"], detail=True)
+    def like(self, request, pk=None):
+
+        liker = get_object_or_404(Customer, user=request.auth.user)
+        product = get_object_or_404(Product, pk=pk)
+
+        if request.method == "POST":
+            try:
+                # Check if the user already liked the product
+                existing_like = Like.objects.get(product=product, liker=liker)
+                return Response(None, status=status.HTTP_405_METHOD_NOT_ALLOWED)
+            except Like.DoesNotExist:
+                # If there is no existing like, create a new one
+                like = Like(liker=liker, product=product)
+                like.save()
+                return Response(None, status=status.HTTP_204_NO_CONTENT)
+
+        if request.method == "GET":
+            existing_like = Like.objects.filter(product=product, liker=liker).exists()
+            return Response({"liked": existing_like}, status=status.HTTP_200_OK)
+
+        elif request.method == "DELETE":
+            try:
+                # Try to delete the like
+                like = Like.objects.get(product=product, liker=liker)
+                like.delete()
+                return Response(None, status=status.HTTP_204_NO_CONTENT)
+            except Like.DoesNotExist:
+                return Response(None, status=status.HTTP_404_NOT_FOUND)
+
+    @action(methods=["get"], detail=False, url_path="liked")
+    def liked(self, request):
+        """
+        Retrieves all products liked by the current user.
+        """
+        liker = Customer.objects.get(user=request.auth.user)
+        liked_products = Like.objects.filter(liker=liker).values_list(
+            "product", flat=True
+        )
+        products = Product.objects.filter(id__in=liked_products)
+
+        serializer = ProductSerializer(
+            products, many=True, context={"request": request}
+        )
+        return Response(serializer.data)

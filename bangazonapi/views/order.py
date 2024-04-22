@@ -10,7 +10,7 @@ from rest_framework.decorators import action
 from bangazonapi.models import Order, Payment, Customer, Product, OrderProduct
 from bangazonapi.views.paymenttype import PaymentSerializer
 from .product import ProductSerializer
-
+from bangazonapi.views.customer import CustomerSerializer
 
 class OrderLineItemSerializer(serializers.HyperlinkedModelSerializer):
     """JSON serializer for line items"""
@@ -31,7 +31,7 @@ class OrderSerializer(serializers.HyperlinkedModelSerializer):
 
     lineitems = OrderLineItemSerializer(many=True)
     payment_type_info = PaymentSerializer(source="payment_type", read_only=True)
-
+    complete_customer = CustomerSerializer(source="customer")
     class Meta:
         model = Order
         url = serializers.HyperlinkedIdentityField(view_name="order", lookup_field="id")
@@ -41,6 +41,7 @@ class OrderSerializer(serializers.HyperlinkedModelSerializer):
             "created_date",
             "payment_type_info",
             "customer",
+            "complete_customer",
             "lineitems",
         )
 

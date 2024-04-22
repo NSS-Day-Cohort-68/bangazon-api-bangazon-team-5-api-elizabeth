@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>{{ html.title }}</title>
+  </head>
+  <body>
+    <h1>{{ html.heading }}</h1>
+    <table>
+      <tr>
+        <th>Order ID</th>
+        <th>Customer Name</th>
+        {% if status == "complete" %}
+        <th>Total Paid</th>
+        <th>Payment Type</th>
+        {%else%}
+        <th>Total Cost</th>
+        {% endif %}
+      </tr>
+
+      {% if status == "complete" %} {% for order in report_data %}
+      <tr>
+        <td>{{ order.order_id }}</td>
+        <td>{{ order.customer_name }}</td>
+        <td>${{ order.total_paid|floatformat:2 }}</td>
+        <td>{{ order.payment_type }}</td>
+      </tr>
+      {% endfor %} {% else %} {% for order in report_data %}
+      <tr>
+        <td>{{ order.order_id }}</td>
+        <td>{{ order.customer_name }}</td>
+        <td>${{ order.total_cost|floatformat:2 }}</td>
+      </tr>
+      {% endfor %} {% endif %}
+    </table>
+  </body>
+</html>
